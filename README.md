@@ -1,6 +1,6 @@
 # XSServe
 
-XSServe is ~~a shameless copy of~~ heavily inspired by the [XSSHunter](https://xsshunter.com) by ([@IAmMandatory](https://twitter.com/IAmMandatory))  project, rewritten in Go.
+XSServe is ~~a shameless copy of~~ heavily inspired by the [XSSHunter](https://xsshunter.com) project (by [@IAmMandatory](https://twitter.com/IAmMandatory)), rewritten in Go.
 
 ## ⚠ Disclaimer
 The project is in a VERY bare bone state right now, so if you want a prime experience, use other tools.
