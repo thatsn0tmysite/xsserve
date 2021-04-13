@@ -1,0 +1,25 @@
+{{template "layout" .}}
+{{define "title"}}📦 Payloads{{end}}
+
+{{define "main"}}
+    <h2>📦 Payloads</h2>
+    <p>There's nothing to see here yet!</p>
+    <table>
+        <tr>
+            <th>Description</th>
+            <th>Payload</th>
+            <th>Actions</th>
+        </tr>
+        {{range $payload := .}}
+        <tr>
+            <td>{{$payload.Description}}</td>
+            <td><input type="text" value="{{$payload.Code}}"></td>
+            <td>
+                <a href="#" class="tooltip" onclick="copyToClipboard(this.parentNode.parentNode.getElementsByTagName('input')[0])">📋
+                    <span class="tooltiptext">Copy</span>
+                </a>
+            </td>
+        </tr>
+        {{end}}
+      </table>
+{{end}}

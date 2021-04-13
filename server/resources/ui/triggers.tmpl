@@ -1,0 +1,33 @@
+{{template "layout" .}}
+{{define "title"}}🎯 Triggers{{end}}
+
+{{define "main"}}
+    <h2>🎯 Triggers</h2>
+    <p>There's nothing to see here yet!</p>
+    <table>
+        <tr>
+            <th>Date</th>
+            <th>Host</th>
+            <th>Cookies</th>
+            <th>Payload</th>
+            <th>DOM</th>
+            <th>Screenshot</th>
+            <th>Actions</th>
+        </tr>
+        {{range $trigger := .}}
+        <tr>
+            <td>{{$trigger.Date}}</td>
+            <td>{{$trigger.Host}}</td>
+            <td>{{$trigger.Cookies}}</td>
+            <td>{{$trigger.Payload.Code}}</td>
+            <td><input type="textarea" value="{{$trigger.DOM}}"></td>
+            <td><img widht="200px" height="200px" src="/get/screenshot?id={{$trigger.ID}}"></td>
+            <td>
+                <a href="/report?id={{$trigger.ID}}" class="tooltip">📄
+                    <span class="tooltiptext">View report</span>
+                </a>
+            </td>
+        </tr>
+        {{end}}
+      </table>
+{{end}}

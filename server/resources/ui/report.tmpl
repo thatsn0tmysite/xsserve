@@ -1,0 +1,19 @@
+{{template "layout" .}}
+{{define "title"}}Report{{end}}
+
+{{define "main"}}
+    <h2>Report</h2>
+    <p>Here is the report page for: {{.UID}} ({{.ID}})</p>
+    <p>Host: {{.Host}}</p>
+    <p>URI: <a href="{{.URI}}">{{.URI}}</a></p>
+    <p>Origin: {{.Origin}}</p>
+    <p>BrowserDate: {{.BrowserDate}}</p>
+    <p>UserAgent: {{.UserAgent}}</p>
+    <p>Referrer: {{.Referrer}}</p>
+    <p>Cookies: {{.Cookies}}</p>
+    <p>Payload: {{.Payload}}</p>
+    <p>Date: {{.Date}}</p>
+    <p>DOM: <pre> {{.DOM}} </pre> </p>
+    <p>Screenshot: <img src="/get/screenshot?id={{ .ID }}"> </p>
+
+{{end}}

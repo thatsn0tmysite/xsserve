@@ -1,0 +1,134 @@
+body {
+    margin: 0;
+    font-family: "Lato", sans-serif;
+    background-color: #575757;
+    color: #cecece;
+}
+
+/*Sidebar*/
+.sidebar {
+    margin: 0;
+    padding: 0;
+    width: 200px;
+    background-color: #575757;
+    position: fixed;
+    height: 100%;
+    overflow: auto;
+}
+
+.sidebar a.title {
+    background-color: #357937;
+    color: white;
+}
+
+.sidebar a {
+    display: block;
+    color: #cecece;
+    padding: 16px;
+    text-decoration: none;
+}
+
+.sidebar a:hover:not(.title) {
+    background-color: #cecece;
+    color: #575757;
+}
+  
+/*Content*/
+.content {
+    background-color: #cecece;
+    color:black;
+    margin-left: 200px;
+    padding: 1px 16px;
+    height: 1000px;
+}
+
+/*Tooltips*/
+.tooltip {
+    position: relative;
+    display: inline-block;
+    border-bottom: 1px dotted black;
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 120px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    z-index: 1;
+    top: 150%;
+    left: 50%;
+    margin-left: -60px;
+}
+
+.tooltip .tooltiptext::after {
+    content: "";
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent transparent black transparent;
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+}
+
+/*Inputs*/
+input[type=text], select {
+    width: 100%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #cecece;
+    border-radius: 4px;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+/*Tables*/
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    width: 100%;
+    border: 1px solid #cecece;
+    overflow-x:auto;
+}
+
+th {
+    background-color: #357937;
+    color: white;
+    text-align: center;
+    padding: 8px;
+}
+
+td {
+    text-align: center;
+    padding: 8px;
+}
+
+tr:nth-child(even){background-color: #f2f2f2}
+
+/*Responsive*/
+@media screen and (max-width: 700px) {
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+    }
+
+    .sidebar a {float: left;}
+    div.content {margin-left: 0;}
+}
+
+@media screen and (max-width: 400px) {
+.sidebar a {
+    text-align: center;
+    float: none;
+}
+}
