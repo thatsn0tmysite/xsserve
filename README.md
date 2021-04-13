@@ -24,7 +24,7 @@ Currently I'd love some help with:
 - Developers: I am currently working on this project as I learn Go, in the little free time I have, I am by no means a developer so any advice is appreciated, without overly complicating the project.
 - Logo: cause every cool project has a logo.
 
-If you want to get in touch hit me up on (twitter)[https://twitter.com/thatsn0tmysite] or (matrix)[https://matrix.to/#/@thatsn0tmysite:matrix.org]!
+If you want to get in touch hit me up on [twitter](https://twitter.com/thatsn0tmysite) or [matrix](https://matrix.to/#/@thatsn0tmysite:matrix.org)!
 
 ## ✅ TODO
 Here is a list of TODO I have handy, there is much more to do:
