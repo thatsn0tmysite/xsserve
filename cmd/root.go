@@ -5,6 +5,7 @@ import (
 	"log"
 	"sync"
 
+	"xsserve/core"
 	"xsserve/database"
 	"xsserve/server"
 
@@ -13,25 +14,9 @@ import (
 	"github.com/spf13/viper"
 )
 
-// Command line flags
-type Flags struct {
-	DatabaseURI string // MongoDB database URI
-	Database    string // Database name
-	Domain      string // Domain name to use
-	IsHTTPS     bool   // Serve XSS over HTTPS?
-	HTTPSCert   string // Certificate path
-	HTTPSKey    string // Key path
-	UIAddress   string // Address to host the UI on (defaults to 127.0.0.1)
-	UIPort      int    // Port to bind for the UI to (defaults to 7331)
-	XSSAddress  string // Address to serve the XSS files on (defaults to 0.0.0.0)
-	XSSPort     int    // Port to bind for the XSS server to (defaults to 8443 if IsHTTPS, 8080 otherwise)
-	ConfigFile  string // Viper configuration file to use
-	Verbosity   int    // Verbosity level (defaults to 0, >4 is debug)
-}
-
 var (
 	// Used for flags.
-	flags Flags
+	flags core.Flags
 
 	rootCmd = &cobra.Command{
 		Use:   "xsserve",
@@ -52,7 +37,7 @@ var (
 			log.Printf("[UI] Listening on http://%v:%v", flags.UIAddress, flags.UIPort)
 			go func() {
 				defer wg.Done()
-				server.ServeUI(flags.UIAddress, flags.UIPort)
+				server.ServeUI(&flags)
 			}()
 
 			// Setup HTTPS
@@ -70,7 +55,7 @@ var (
 			log.Printf("[XSS] Listening on %v://%v:%v", scheme, flags.XSSAddress, flags.XSSPort)
 			go func() {
 				defer wg.Done()
-				server.ServeXSS(flags.XSSAddress, flags.XSSPort, flags.IsHTTPS, flags.HTTPSCert, flags.HTTPSKey)
+				server.ServeXSS(&flags)
 			}()
 			wg.Wait()
 		},

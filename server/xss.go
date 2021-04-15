@@ -1,6 +1,7 @@
 package server
 
 import (
+	"bytes"
 	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
@@ -17,7 +18,9 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func ServeXSS(addr string, port int, https bool, cert, key string) (err error) {
+func ServeXSS(currentFlags *core.Flags) (err error) {
+	flags = currentFlags
+
 	mux := http.NewServeMux()
 
 	//redirectHandler := http.RedirectHandler("http://example.org", 307)
@@ -49,22 +52,22 @@ func ServeXSS(addr string, port int, https bool, cert, key string) (err error) {
 
 	//TODO: check if HTTPS, then serve over TLS otherwise HTTP
 	//TODO: if no certificates provided and HTTPS is enabled generate certificates
-	_, err = tls.LoadX509KeyPair(cert, key)
-	if err != nil && https {
+	_, err = tls.LoadX509KeyPair(flags.HTTPSCert, flags.HTTPSKey)
+	if err != nil && flags.IsHTTPS {
 		log.Println("Certificate or key file not found or invalid:", err)
 		return
 	}
 
 	server := &http.Server{
-		Addr:           fmt.Sprintf("%s:%d", addr, port),
+		Addr:           fmt.Sprintf("%s:%d", flags.XSSAddress, flags.XSSPort),
 		Handler:        mux,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
 
-	if https {
-		err = server.ListenAndServeTLS(cert, key)
+	if flags.IsHTTPS {
+		err = server.ListenAndServeTLS(flags.HTTPSCert, flags.HTTPSKey)
 	} else {
 		err = server.ListenAndServe()
 	}
@@ -103,8 +106,19 @@ func blindHandle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var protocol, endpoint string
+	protocol = "http"
+	if flags.IsHTTPS {
+		protocol = "https"
+	}
+	endpoint = flags.XSSAddress
+	if flags.Domain != "" {
+		endpoint = flags.Domain
+	}
+
 	// TODO: use go templates instead?
-	//blind = bytes.ReplaceAll(blind, "[HOST_NAME_REPLACEME]", "")
+	blind = bytes.ReplaceAll(blind, []byte("[[HOST_REPLACE_ME]]"), []byte(fmt.Sprintf("%v://%v:%v", protocol, endpoint, flags.XSSPort)))
+
 	_, err = w.Write(blind)
 	if err != nil {
 		log.Println("Failed to write response: ", err)
