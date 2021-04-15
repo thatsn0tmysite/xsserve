@@ -72,7 +72,7 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVar(&flags.DatabaseURI, "database-uri", "mongodb://127.0.0.1:27017", "MongoDB database URI")
 	rootCmd.PersistentFlags().StringVar(&flags.Database, "database", "xsserve_db", "MongoDB database name")
-	rootCmd.PersistentFlags().StringVarP(&flags.Domain, "domain", "d", "127.0.0.1", "Domain name to use")
+	rootCmd.PersistentFlags().StringVarP(&flags.Domain, "domain", "d", "", "Domain name to use")
 	rootCmd.PersistentFlags().BoolVar(&flags.IsHTTPS, "https", false, "Serve XSS over HTTPS")
 	rootCmd.PersistentFlags().StringVar(&flags.HTTPSCert, "https-cert", "", "Certificate path")
 	rootCmd.PersistentFlags().StringVar(&flags.HTTPSKey, "https-key", "", "Key path")
