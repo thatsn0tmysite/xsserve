@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"xsserve/core"
@@ -143,6 +144,21 @@ func payloadsHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal Server Error", 500)
 	}
 	cursor.All(database.CTX, &payloads)
+
+	var protocol, endpoint, url string
+	protocol = "http"
+	if flags.IsHTTPS {
+		protocol = "https"
+	}
+	endpoint = flags.XSSAddress
+	if flags.Domain != "" {
+		endpoint = flags.Domain
+	}
+
+	url = fmt.Sprintf("%v://%v:%v", protocol, endpoint, flags.XSSPort)
+	for i, payload := range payloads {
+		payloads[i].Code = strings.ReplaceAll(payload.Code, "[[HOST_REPLACE_ME]]", url)
+	}
 
 	err = tmpl.Execute(w, payloads)
 	if err != nil {

