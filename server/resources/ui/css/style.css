@@ -17,7 +17,7 @@ body {
 }
 
 .sidebar a.title {
-    background-color: #357937;
+    background-color: #3b94d9;
     color: white;
 }
 
@@ -101,7 +101,7 @@ table {
 }
 
 th {
-    background-color: #357937;
+    background-color: #3b94d9;
     color: white;
     text-align: center;
     padding: 8px;
@@ -110,6 +110,15 @@ th {
 td {
     text-align: center;
     padding: 8px;
+}
+
+td ul {
+    list-style-type: "🍪";
+}
+
+textarea {
+    height: 100%;
+    width: 100%;
 }
 
 tr:nth-child(even){background-color: #f2f2f2}
