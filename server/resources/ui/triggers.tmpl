@@ -4,7 +4,7 @@
 {{define "main"}}
     <h2>🎯 Triggers</h2>
     <p>List of triggered payloads.</p>
-    <table>
+    <table class="table table-dark">
         <tr>
             <th>Date</th>
             <th>Host</th>
@@ -29,9 +29,7 @@
             <td><a href="{{$trigger.URI}}">{{$trigger.URI}}</a></td>
             <td><a href="/get/screenshot?id={{$trigger.ID}}"><img widht="200px" height="200px" src="/get/screenshot?id={{$trigger.ID}}"></a></td>
             <td>
-                <a href="/report?id={{$trigger.ID}}" class="tooltip">📄
-                    <span class="tooltiptext">View report</span>
-                </a>
+                <button type="button" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="View report" onclick="window.location.href='/report?id={{$trigger.ID}}'">📄</button>
             </td>
         </tr>
         {{end}}
