@@ -4,7 +4,7 @@
 {{define "main"}}
     <h2>📦 Payloads</h2>
     <p>Here is a list of pre-made payloads, for the lazy ones!</p>
-    <table>
+    <table class="table table-dark">
         <tr>
             <th>Description</th>
             <th>Payload</th>
@@ -13,11 +13,9 @@
         {{range $payload := .}}
         <tr>
             <td>{{$payload.Description}}</td>
-            <td><input type="text" value="{{$payload.Code}}"></td>
+            <td><input class="input" type="text" value="{{$payload.Code}}"></td>
             <td>
-                <a href="#" class="tooltip" onclick="copyToClipboard(this.parentNode.parentNode.getElementsByTagName('input')[0])">📋
-                    <span class="tooltiptext">Copy</span>
-                </a>
+                <button type="button" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy" onclick="copyToClipboard(this.parentNode.parentNode.getElementsByTagName('input')[0])">📄</button>
             </td>
         </tr>
         {{end}}
