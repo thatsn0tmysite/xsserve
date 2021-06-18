@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"log"
 	"sync"
@@ -27,12 +29,23 @@ var (
 			var wg sync.WaitGroup
 
 			// Get database
+			log.Println("Attempting to connect to database: ", flags.DatabaseURI, flags.Database)
 			err := database.Open(flags.DatabaseURI, flags.Database)
 			if err != nil {
-				log.Fatal("Error opening databse:", err)
+				log.Fatal("Error opening database:", err)
 			}
 			log.Println("Successfully connected to database:", flags.DatabaseURI, flags.Database)
 			// Setup UI
+			if flags.BasicAuth && flags.BasicAuthPass == "" {
+				// Generate random password on UI start if Basic Auth is enabled
+				p := make([]byte, 25)
+				_, err := rand.Read(p)
+				if err != nil {
+					log.Fatal("Error generating UI credentials:", err)
+				}
+				flags.BasicAuthPass = hex.EncodeToString(p)
+				log.Printf("[UI] Basic authentication: %v %v", flags.BasicAuthUser, flags.BasicAuthPass)
+			}
 			wg.Add(1)
 			log.Printf("[UI] Listening on http://%v:%v", flags.UIAddress, flags.UIPort)
 			go func() {
@@ -82,6 +95,9 @@ func init() {
 	rootCmd.PersistentFlags().IntVar(&flags.XSSPort, "xss-port", 0, "Port to bind for the XSS server to")
 	rootCmd.PersistentFlags().IntVarP(&flags.Verbosity, "verbose", "v", 0, "Verbosity level")
 	rootCmd.PersistentFlags().StringVar(&flags.ConfigFile, "config", "", "config file (default is $HOME/.cobra.yaml)")
+	rootCmd.PersistentFlags().BoolVar(&flags.BasicAuth, "auth", false, "Enable basic authentication")
+	rootCmd.PersistentFlags().StringVar(&flags.BasicAuthUser, "auth-user", "xsserve", "Basic-auth username")
+	rootCmd.PersistentFlags().StringVar(&flags.BasicAuthPass, "auth-pass", "", "Basic-auth password")
 
 	//	viper.SetDefault("author", "NAME HERE <EMAIL ADDRESS>")
 	//	viper.SetDefault("license", "apache")
@@ -97,6 +113,9 @@ func init() {
 	viper.BindPFlag("XSSAddress", rootCmd.PersistentFlags().Lookup("xss-addr"))
 	viper.BindPFlag("XSSPort", rootCmd.PersistentFlags().Lookup("xss-port"))
 	viper.BindPFlag("Verbosity", rootCmd.PersistentFlags().Lookup("verbose"))
+	viper.BindPFlag("BasicAuth", rootCmd.PersistentFlags().Lookup("auth"))
+	viper.BindPFlag("BasicAuthUser", rootCmd.PersistentFlags().Lookup("auth-user"))
+	viper.BindPFlag("BasicAuthPass", rootCmd.PersistentFlags().Lookup("auth-pass"))
 
 	// rootCmd.AddCommand(addCmd)
 	// rootCmd.AddCommand(initCmd)

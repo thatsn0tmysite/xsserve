@@ -5,7 +5,7 @@ XSServe is ~~a shameless copy of~~ heavily inspired by the [XSSHunter](https://x
 ## ⚠ Disclaimer
 The project is in a VERY bare bone state right now, so if you want a prime experience, use other tools.
 
-> NOTE: there is no authentication to the UI.
+> NOTE: only basic authentication is supported for the UI for now.
 
 ## 📷 Mandatory screenshot
 ![Mandatory screenshot](.images/mandatory.png)

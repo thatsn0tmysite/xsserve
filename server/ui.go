@@ -63,6 +63,9 @@ func loadTemplate(file string) (*template.Template, error) {
 
 // Handles
 func indexHandle(w http.ResponseWriter, r *http.Request) {
+	/*Basic auth*/
+	checkAutorization(w, r)
+
 	tmpl, err := loadTemplate("resources/ui/index.tmpl")
 	if err != nil {
 		log.Println(err)
@@ -78,6 +81,9 @@ func indexHandle(w http.ResponseWriter, r *http.Request) {
 }
 
 func triggersHandle(w http.ResponseWriter, r *http.Request) {
+	/*Basic auth*/
+	checkAutorization(w, r)
+
 	tmpl, err := loadTemplate("resources/ui/triggers.tmpl")
 	if err != nil {
 		log.Println(err.Error())
@@ -101,6 +107,9 @@ func triggersHandle(w http.ResponseWriter, r *http.Request) {
 }
 
 func reportHandle(w http.ResponseWriter, r *http.Request) {
+	/*Basic auth*/
+	checkAutorization(w, r)
+
 	tmpl, err := loadTemplate("resources/ui/report.tmpl")
 	if err != nil {
 		log.Println(err)
@@ -129,6 +138,9 @@ func reportHandle(w http.ResponseWriter, r *http.Request) {
 }
 
 func payloadsHandler(w http.ResponseWriter, r *http.Request) {
+	/*Basic auth*/
+	checkAutorization(w, r)
+
 	// TODO: add more payloads and customize payloads with current HOST/IP address
 	tmpl, err := loadTemplate("resources/ui/payloads.tmpl")
 	if err != nil {
@@ -168,6 +180,9 @@ func payloadsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getScreenshotHandler(w http.ResponseWriter, r *http.Request) {
+	/*Basic auth*/
+	checkAutorization(w, r)
+
 	objID, err := primitive.ObjectIDFromHex(r.URL.Query().Get("id"))
 	if err != nil {
 		log.Println(err)
@@ -183,4 +198,24 @@ func getScreenshotHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Add("Content-type", "image/png")
 	w.Write(trigger.Screenshot)
+}
+
+/* Check basic authentication */
+func checkAutorization(w http.ResponseWriter, r *http.Request) {
+	if flags.BasicAuth {
+		username, password, ok := r.BasicAuth()
+		if !ok {
+			w.Header().Add("WWW-Authenticate", `Basic realm="Enter the username and password"`)
+			w.WriteHeader(http.StatusUnauthorized)
+			w.Write([]byte(`{"message": "No basic auth present"}`))
+			return
+		}
+
+		if username != flags.BasicAuthUser || password != flags.BasicAuthPass {
+			w.Header().Add("WWW-Authenticate", `Basic realm="Enter the username and password"`)
+			w.WriteHeader(http.StatusUnauthorized)
+			w.Write([]byte(`{"message": "Invalid username or password"}`))
+			return
+		}
+	}
 }
