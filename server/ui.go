@@ -115,10 +115,6 @@ func hijackSessionHandle(w http.ResponseWriter, r *http.Request) {
 
 	// Setup node capabilities
 	caps := selenium.Capabilities{"browserName": flags.SeleniumBrowser}
-	log.Println(flags.SeleniumBrowser)
-	log.Println(flags.SeleniumURL)
-	log.Println(caps)
-
 	wd, err := selenium.NewRemote(caps, flags.SeleniumURL)
 	if err != nil {
 		log.Println(err)
