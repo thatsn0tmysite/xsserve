@@ -8,21 +8,23 @@ import (
 
 // Command line flags
 type Flags struct {
-	DatabaseURI   string // MongoDB database URI
-	Database      string // Database name
-	Domain        string // Domain name to use
-	IsHTTPS       bool   // Serve XSS over HTTPS?
-	HTTPSCert     string // Certificate path
-	HTTPSKey      string // Key path
-	UIAddress     string // Address to host the UI on (defaults to 127.0.0.1)
-	UIPort        int    // Port to bind for the UI to (defaults to 7331)
-	XSSAddress    string // Address to serve the XSS files on (defaults to 0.0.0.0)
-	XSSPort       int    // Port to bind for the XSS server to (defaults to 8443 if IsHTTPS, 8080 otherwise)
-	ConfigFile    string // Viper configuration file to use
-	Verbosity     int    // Verbosity level (defaults to 0, >4 is debug)
-	BasicAuth     bool   // Enable Basic Authentication
-	BasicAuthUser string // Basic authentication username
-	BasicAuthPass string // Basic authentication password
+	DatabaseURI     string // MongoDB database URI
+	Database        string // Database name
+	Domain          string // Domain name to use
+	IsHTTPS         bool   // Serve XSS over HTTPS?
+	HTTPSCert       string // Certificate path
+	HTTPSKey        string // Key path
+	UIAddress       string // Address to host the UI on (defaults to 127.0.0.1)
+	UIPort          int    // Port to bind for the UI to (defaults to 7331)
+	XSSAddress      string // Address to serve the XSS files on (defaults to 0.0.0.0)
+	XSSPort         int    // Port to bind for the XSS server to (defaults to 8443 if IsHTTPS, 8080 otherwise)
+	ConfigFile      string // Viper configuration file to use
+	Verbosity       int    // Verbosity level (defaults to 0, >4 is debug)
+	BasicAuth       bool   // Enable Basic Authentication
+	BasicAuthUser   string // Basic authentication username
+	BasicAuthPass   string // Basic authentication password
+	SeleniumURL     string // Selenium node to use
+	SeleniumBrowser string // Selenium driver to use
 }
 
 type Payload struct {

@@ -35,6 +35,23 @@ var (
 				log.Fatal("Error opening database:", err)
 			}
 			log.Println("Successfully connected to database:", flags.DatabaseURI, flags.Database)
+
+			//Run Selenium
+			/*
+				log.Printf("Running %v on %v:%v", flags.SeleniumPath, flags.SeleniumHost, flags.SeleniumPort)
+				go func() {
+					selenium_cmd := []string{"-jar", flags.SeleniumPath, "-host", flags.SeleniumHost, "-port", fmt.Sprint(flags.SeleniumPort)}
+					selenium_process := exec.Command("java", selenium_cmd...)
+					defer selenium_process.Process.Kill()
+
+					output, err := selenium_process.CombinedOutput()
+					if err != nil {
+						log.Println("Selenium failed to run, some functinalities will not be available:", err)
+					}
+					log.Printf("%s", output)
+				}()
+			*/
+
 			// Setup UI
 			if flags.BasicAuth && flags.BasicAuthPass == "" {
 				// Generate random password on UI start if Basic Auth is enabled
@@ -98,9 +115,8 @@ func init() {
 	rootCmd.PersistentFlags().BoolVar(&flags.BasicAuth, "auth", false, "Enable basic authentication")
 	rootCmd.PersistentFlags().StringVar(&flags.BasicAuthUser, "auth-user", "xsserve", "Basic-auth username")
 	rootCmd.PersistentFlags().StringVar(&flags.BasicAuthPass, "auth-pass", "", "Basic-auth password")
-
-	//	viper.SetDefault("author", "NAME HERE <EMAIL ADDRESS>")
-	//	viper.SetDefault("license", "apache")
+	rootCmd.PersistentFlags().StringVar(&flags.SeleniumURL, "selenium-url", "http://127.0.0.1:4444/wd/hub", "Selenium node to use")
+	rootCmd.PersistentFlags().StringVar(&flags.SeleniumBrowser, "selenium-browser", "firefox", "Selenium driver to use")
 
 	viper.BindPFlag("DatabaseURI", rootCmd.PersistentFlags().Lookup("database-uri"))
 	viper.BindPFlag("Database", rootCmd.PersistentFlags().Lookup("database"))
@@ -116,9 +132,9 @@ func init() {
 	viper.BindPFlag("BasicAuth", rootCmd.PersistentFlags().Lookup("auth"))
 	viper.BindPFlag("BasicAuthUser", rootCmd.PersistentFlags().Lookup("auth-user"))
 	viper.BindPFlag("BasicAuthPass", rootCmd.PersistentFlags().Lookup("auth-pass"))
+	viper.BindPFlag("SeleniumURL", rootCmd.PersistentFlags().Lookup("selenium-url"))
+	viper.BindPFlag("SeleniumBrowser", rootCmd.PersistentFlags().Lookup("selenium-browser"))
 
-	// rootCmd.AddCommand(addCmd)
-	// rootCmd.AddCommand(initCmd)
 }
 
 func initConfig() {

