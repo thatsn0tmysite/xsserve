@@ -35,6 +35,8 @@ func ServeUI(currentFlags *core.Flags) (err error) {
 	getScreenshot := http.HandlerFunc(getScreenshotHandler)
 	hijackSession := http.HandlerFunc(hijackSessionHandle)
 
+	deleteTrigger := http.HandlerFunc(deleteTriggerHandle)
+
 	mux.Handle("/favicon.ico", favicon)
 	mux.Handle("/dashboard", index)
 	mux.Handle("/triggers", triggers)
@@ -42,6 +44,7 @@ func ServeUI(currentFlags *core.Flags) (err error) {
 	mux.Handle("/payloads", payloads)
 	mux.Handle("/get/screenshot", getScreenshot)
 	mux.Handle("/hijack", hijackSession)
+	mux.Handle("/triggers/delete", deleteTrigger)
 
 	//TODO: fix, The script from “http://host/static/resources/ui/js/main.js” was loaded even though its MIME type (“text/plain”) is not a valid JavaScript MIME type.
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(StaticFS))))
@@ -184,6 +187,21 @@ func reportHandle(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		http.Error(w, "Internal Server Error", 500)
 	}
+}
+
+func deleteTriggerHandle(w http.ResponseWriter, r *http.Request) {
+	/*Basic auth*/
+	checkAutorization(w, r)
+
+	objID, err := primitive.ObjectIDFromHex(r.URL.Query().Get("id"))
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Internal Server Error", 500)
+	}
+
+	database.DB.Collection("triggers").DeleteOne(database.CTX, bson.M{"_id": objID.Hex()})
+
+	http.Redirect(w, r, "/triggers", http.StatusSeeOther)
 }
 
 func payloadsHandler(w http.ResponseWriter, r *http.Request) {

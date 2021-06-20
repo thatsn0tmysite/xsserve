@@ -81,3 +81,5 @@ func Close() {
 func InsertPayload(*core.Payload) {}
 
 func InsertTrigger(*core.Trigger) {}
+
+func RemoveTrigger(*core.Trigger) {}

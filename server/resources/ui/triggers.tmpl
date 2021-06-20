@@ -31,6 +31,7 @@
             <td>
                 <button type="button" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="View report" onclick="window.location.href='/report?id={{$trigger.ID}}'">📄</button>
                 <button type="button" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="Hijack session" onclick="window.location.href='/hijack?id={{$trigger.ID}}'">💀</button>
+                <button type="button" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="Remove trigger" onclick="window.location.href='/triggers/delete?id={{$trigger.ID}}'">🗑</button>
             </td>
         </tr>
         {{end}}
