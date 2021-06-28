@@ -40,11 +40,11 @@ func ServeUI(currentFlags *core.Flags) (err error) {
 	mux.Handle("/favicon.ico", favicon)
 	mux.Handle("/dashboard", index)
 	mux.Handle("/triggers", triggers)
-	mux.Handle("/report", report)
+	mux.Handle("/triggers/report", report)
+    mux.Handle("/triggers/hijack", hijackSession)
+	mux.Handle("/triggers/delete", deleteTrigger)
 	mux.Handle("/payloads", payloads)
 	mux.Handle("/get/screenshot", getScreenshot)
-	mux.Handle("/hijack", hijackSession)
-	mux.Handle("/triggers/delete", deleteTrigger)
 
 	//TODO: fix, The script from “http://host/static/resources/ui/js/main.js” was loaded even though its MIME type (“text/plain”) is not a valid JavaScript MIME type.
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(StaticFS))))
