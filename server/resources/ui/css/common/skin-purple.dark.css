@@ -148,6 +148,13 @@
     cursor: pointer
 }
 
+.btn.focus,
+.btn:focus,
+.btn:hover {
+    color: #999;
+    text-decoration: none;
+}
+
 .btn.active:focus,
 .btn:active:focus,
 .btn:focus {
