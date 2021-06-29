@@ -14,8 +14,6 @@ import (
 
 	"xsserve/core"
 	"xsserve/database"
-
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func ServeXSS(currentFlags *core.Flags) (err error) {
@@ -149,10 +147,9 @@ func apiHandle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Println("[API] Received data from trigger via", r.Method, "from: ", r.Host)
+	log.Println("[API] Received data from trigger via", r.Method, "from:", r.RemoteAddr)
 	//parse parameters
 	var j map[string]string
-	var t core.Trigger
 
 	err := json.NewDecoder(r.Body).Decode(&j)
 	defer r.Body.Close()
@@ -162,38 +159,44 @@ func apiHandle(w http.ResponseWriter, r *http.Request) {
 
 	//TODO: this is VERY fugly code, rework it to be nicer from the json into the core.Trigger struct
 	// Parse Cookies header
+	var t core.Trigger
 	header := http.Header{}
 	header.Add("Cookie", j["Cookies"])
 	request := http.Request{Header: header}
-	t.ID = primitive.NewObjectID().Hex()
-	t.Date = time.Now()
-	t.Host = j["Host"]
-	t.Payload = core.Payload{Code: j["Payload"]}
 	t.Cookies = request.Cookies()
-	t.URI = j["URI"]
-	t.Referrer = j["Referrer"]
-	t.UserAgent = j["UserAgent"]
+
+	t.Date = time.Now()
 	browserDate, err := strconv.ParseInt(j["BrowserDate"], 10, 64)
 	if err != nil {
 		log.Println("Failed to decode BrowserDate:", err)
 	}
-	t.BrowserDate = time.Unix(browserDate, 0)
-	t.UID, err = strconv.Atoi(j["UID"])
-	if err != nil {
-		log.Println("Failed to decode UID:", err)
-		t.UID = -1
-	}
+	t.BrowserDate = time.Unix(browserDate/1000, 0) // Manually convert to seconds... so we /1000
+
+	/*TOOD: perform query to get Payload id from Code*/
+	t.Payload = core.Payload{Code: j["Payload"]}
+
+	t.UID = j["UID"]
+	t.Host = j["Host"]
+	t.URI = j["URI"]
+	t.Referrer = j["Referrer"]
+	t.UserAgent = j["UserAgent"]
 	t.Origin = j["Origin"]
 	t.DOM = j["DOM"]
+	t.RemoteAddr = r.RemoteAddr
 
 	// Save the image as bytes so we can serve it later via /get/screenshot
 	b64data := j["Screenshot"][strings.IndexByte(j["Screenshot"], ',')+1:]
-	t.Screenshot, _ = base64.StdEncoding.DecodeString(b64data)
-
-	insertResult, err := database.DB.Collection("triggers").InsertOne(database.CTX, &t)
+	t.Screenshot, err = base64.StdEncoding.DecodeString(b64data)
 	if err != nil {
-		log.Println("Failed to insert into database:", err)
+		log.Println("Failed decoding image:", err)
 	}
 
-	log.Println("Inserted into db:", insertResult)
+	// Insert trigger to DB
+	_, err = database.InsertTrigger(&t)
+	if err != nil {
+		log.Println("Failed to insert into database:", err)
+		return
+	}
+
+	log.Println("Inserted into db:", t)
 }

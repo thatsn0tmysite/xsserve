@@ -1,54 +1,71 @@
 package database
 
 import (
-	"context"
 	"fmt"
 	"log"
+	"net/http"
+	"strings"
 	"time"
 	"xsserve/core"
 
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"database/sql"
+
+	_ "modernc.org/sqlite"
 )
 
-var (
-	client *mongo.Client
-	CTX    context.Context
-	DB     *mongo.Database
-)
+var db *sql.DB
 
-func Open(uri, database string) (err error) {
-	client, err = mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017")) //uri
-	if err != nil {
-		log.Println(err)
-		return err
-	}
-	CTX, cancelFunction := context.WithTimeout(context.Background(), 10*time.Second)
-	cancelFunction()
-	err = client.Connect(CTX)
-	if err != nil {
-		log.Println(err)
-		return err
+func Open(uri string) (_ *sql.DB, err error) {
+	log.Println("Attempting to connect to database: ", uri)
+	driver := "sqlite"
+	if strings.HasPrefix(uri, "sql://") {
+		driver = "sql"
 	}
 
-	err = initialize(database)
-	return err
+	db, err = sql.Open(driver, uri)
+	if err != nil {
+		return nil, err
+	}
+	log.Println("Successfully connected to database:", uri)
+
+	err = initialize()
+	return db, err
 }
 
-func initialize(database string) (err error) {
-	DB = client.Database(database)
-	//DB.CreateCollection(CTX, "payloads")
-	//DB.CreateCollection(CTX, "triggers")
+func initialize() (err error) {
+	db.Query(`CREATE TABLE IF NOT EXISTS "Payloads" (
+		"id"	INTEGER NOT NULL UNIQUE,
+		"Description"	TEXT,
+		"Code"	TEXT NOT NULL UNIQUE,
+		PRIMARY KEY("id")
+	)`)
 
-	payloadsColl := DB.Collection("payloads")
+	db.Query(`CREATE TABLE IF NOT EXISTS "Triggers" (
+		"id"	INTEGER NOT NULL UNIQUE,
+		"Host"	TEXT,
+		"URI"	TEXT,
+		"DOM"	TEXT,
+		"Cookies"	TEXT,
+		"UID"	INTEGER,
+		"Payload"	INTEGER,
+		"Screenshot"	BLOB,
+		"BrowserDate"	TEXT,
+		"Referrer"	TEXT,
+		"Origin"	TEXT,
+		"Date"	TEXT,
+		"UserAgent"	TEXT,
+		"RemoteAddress" TEXT,
+		PRIMARY KEY("id")
+	)`)
 
-	count, err := payloadsColl.CountDocuments(CTX, bson.M{})
-	if err != nil {
-		return err
-	}
+	/*Check if we have and empty table, if so add the default payloads*/
+	var count int
+	rows := db.QueryRow("SELECT COUNT(*) from Payloads")
+	rows.Scan(&count)
+
 	if count < 1 {
+		log.Println("Creating initial database...")
+
 		log.Println("Adding basic payloads")
 		payloads := []core.Payload{
 			{Description: "As simple as it can get!", Code: "<script>alert(1)</script>"},
@@ -61,25 +78,188 @@ func initialize(database string) (err error) {
 		}
 
 		for _, payload := range payloads {
-			payload.ID = primitive.NewObjectID().Hex()
-			log.Println("Inserted default payload: ", payload)
-			payloadsColl.InsertOne(CTX, payload)
-
+			_, err := InsertPayload(&payload)
+			if err != nil {
+				log.Println("Failed to insert payload", err)
+			} else {
+				log.Println("Inserted default payload: ", payload)
+			}
 		}
 	}
 
-	DB.Collection("payloads")
 	return err
 }
 
 func Close() {
-	if client != nil && CTX != nil {
-		client.Disconnect(CTX)
-	}
+	log.Println("Closing database...")
+	db.Close()
 }
 
-func InsertPayload(*core.Payload) {}
+func InsertPayload(payload *core.Payload) (r sql.Result, err error) {
+	r, err = db.Exec(`INSERT INTO "Payloads" (
+		id,
+		Description, 
+		Code
+		) VALUES (NULL, ?, ?)`, payload.Description, payload.Code)
+	return r, err
+}
 
-func InsertTrigger(*core.Trigger) {}
+func GetPayload(payload *core.Payload) (err error) {
+	rows, err := db.Query(`SELECT * FROM Payloads WHERE id=?`, payload.ID)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
 
-func RemoveTrigger(*core.Trigger) {}
+	rows.Scan(&payload.ID, &payload.Description, &payload.Code)
+	return err
+}
+
+/*TODO: eventually allow filtering payloads*/
+func GetPayloads() (payloads []core.Payload, err error) {
+	rows, err := db.Query(`SELECT * FROM Payloads`)
+	if err != nil {
+		return payloads, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var p core.Payload
+		rows.Scan(&p.ID, &p.Description, &p.Code)
+		payloads = append(payloads, p)
+	}
+
+	return payloads, err
+}
+
+func DeletePayload(payload *core.Payload) (err error) {
+	/*TODO: Check if payload is not one of the default ones, if not allow deletion*/
+	return err
+}
+
+func InsertTrigger(trigger *core.Trigger) (r sql.Result, err error) {
+	var cookieStrings []string
+	for _, cookie := range trigger.Cookies {
+		cookieStrings = append(cookieStrings, cookie.String())
+	}
+
+	r, err = db.Exec(`INSERT INTO "Triggers" (
+				"id",
+				"Host", 
+				"URI", 
+				"DOM", 
+				"Cookies", 
+				"UID",
+				"Payload",
+				"Screenshot",
+				"BrowserDate",
+				"Referrer", 
+				"Origin", 
+				"Date", 
+				"UserAgent",
+				"RemoteAddress"
+		) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		trigger.Host, trigger.URI, trigger.DOM, strings.Join(cookieStrings, ";"), trigger.UID, trigger.Payload.ID,
+		trigger.Screenshot, trigger.BrowserDate.Format("Mon Jan 2 15:04:05 -0700 MST 2006"), trigger.Referrer, trigger.Origin, trigger.Date.Format("Mon Jan 2 15:04:05 -0700 MST 2006"),
+		trigger.UserAgent, trigger.RemoteAddr)
+
+	/*TODO: get UID, check if any payload was generated with UID, populate trigger.Payload accordingly*/
+
+	return r, err
+}
+
+func GetTrigger(trigger *core.Trigger) (err error) {
+	rows, err := db.Query(`SELECT * FROM Triggers WHERE id=?`, trigger.ID)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	triggers, err := rowsToTriggers(rows)
+	if err != nil {
+		return err
+	}
+
+	if len(triggers) > 0 {
+		//TODO: find a more elegant way (copy struct mem?)
+		trigger.UID = triggers[0].UID
+		trigger.ID = triggers[0].ID
+		trigger.BrowserDate = triggers[0].BrowserDate
+		trigger.Date = triggers[0].Date
+		trigger.Cookies = triggers[0].Cookies
+		trigger.DOM = triggers[0].DOM
+		trigger.Host = triggers[0].Host
+		trigger.RemoteAddr = triggers[0].RemoteAddr
+		trigger.Referrer = triggers[0].Referrer
+		trigger.Origin = triggers[0].Origin
+		trigger.Screenshot = triggers[0].Screenshot
+		trigger.Payload = triggers[0].Payload
+		trigger.URI = triggers[0].URI
+		trigger.UserAgent = triggers[0].UserAgent
+	}
+
+	return err
+}
+
+/*TODO: eventually allow filtering given a trigger struct*/
+func GetTriggers() (triggers []core.Trigger, err error) {
+	rows, err := db.Query(`SELECT * FROM Triggers`)
+	if err != nil {
+		return triggers, err
+	}
+	defer rows.Close()
+
+	triggers, err = rowsToTriggers(rows)
+	return triggers, err
+}
+
+func DeleteTrigger(trigger *core.Trigger) (err error) {
+	/*TODO: remove trigger*/
+	_, err = db.Exec("DELETE FROM Triggers WHERE id=?", trigger.ID)
+	return err
+}
+
+func rowsToTriggers(rows *sql.Rows) (triggers []core.Trigger, err error) {
+	for rows.Next() {
+		var t core.Trigger
+
+		var cookieString string
+		var payload core.Payload
+		var triggerDate string
+		var browserDate string
+
+		/*Pupulate trigger*/
+		rows.Scan(&t.ID, &t.Host, &t.URI, &t.DOM, &cookieString, &t.UID, &payload.ID, &t.Screenshot,
+			&browserDate, &t.Referrer, &t.Origin, &triggerDate, &t.UserAgent, &t.RemoteAddr)
+
+		//Convert cookie string to cookies
+		header := http.Header{}
+		header.Add("Cookie", cookieString)
+		request := http.Request{Header: header}
+		t.Cookies = request.Cookies()
+
+		//Convert strings to time.Time
+		t.Date, err = time.Parse("Mon Jan 2 15:04:05 -0700 MST 2006", triggerDate)
+		if err != nil {
+			log.Println("Error parsing date:", err)
+		}
+		t.BrowserDate, err = time.Parse("Mon Jan 2 15:04:05 -0700 MST 2006", browserDate)
+		if err != nil {
+			log.Println("Error parsing date:", err)
+		}
+
+		t.Payload = core.Payload{}
+		if t.UID != "" { // Should be safe to assume that if we haven't used UID for our payload, we cant possibly know which payload worked, right?
+			err = GetPayload(&payload) //TODO? this is 0 by default, so lets make it be -1 or something if uid is not given
+			if err != nil {
+				log.Println("Error getting payload:", err)
+			}
+			t.Payload = payload
+		}
+
+		// Append to triggers
+		triggers = append(triggers, t)
+	}
+
+	return triggers, err
+}

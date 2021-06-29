@@ -8,8 +8,7 @@ import (
 
 // Command line flags
 type Flags struct {
-	DatabaseURI     string // MongoDB database URI
-	Database        string // Database name
+	DatabaseURI     string // Database URI to use
 	Domain          string // Domain name to use
 	IsHTTPS         bool   // Serve XSS over HTTPS?
 	HTTPSCert       string // Certificate path
@@ -28,7 +27,7 @@ type Flags struct {
 }
 
 type Payload struct {
-	ID          string `bson:"_id"`
+	ID          int
 	Code        string
 	Description string
 	//HasWhiteSpaces bool
@@ -42,13 +41,14 @@ func (payload Payload) String() string {
 }
 
 type Trigger struct {
-	UID         int
-	ID          string `bson:"_id"`
+	UID         string
+	ID          int
 	Payload     Payload
 	Date        time.Time
 	Screenshot  []byte
 	DOM         string
 	Host        string
+	RemoteAddr  string
 	URI         string
 	Origin      string
 	BrowserDate time.Time

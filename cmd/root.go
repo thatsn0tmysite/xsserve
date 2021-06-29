@@ -29,28 +29,11 @@ var (
 			var wg sync.WaitGroup
 
 			// Get database
-			log.Println("Attempting to connect to database: ", flags.DatabaseURI, flags.Database)
-			err := database.Open(flags.DatabaseURI, flags.Database)
+			_, err := database.Open(flags.DatabaseURI)
 			if err != nil {
 				log.Fatal("Error opening database:", err)
 			}
-			log.Println("Successfully connected to database:", flags.DatabaseURI, flags.Database)
-
-			//Run Selenium
-			/*
-				log.Printf("Running %v on %v:%v", flags.SeleniumPath, flags.SeleniumHost, flags.SeleniumPort)
-				go func() {
-					selenium_cmd := []string{"-jar", flags.SeleniumPath, "-host", flags.SeleniumHost, "-port", fmt.Sprint(flags.SeleniumPort)}
-					selenium_process := exec.Command("java", selenium_cmd...)
-					defer selenium_process.Process.Kill()
-
-					output, err := selenium_process.CombinedOutput()
-					if err != nil {
-						log.Println("Selenium failed to run, some functinalities will not be available:", err)
-					}
-					log.Printf("%s", output)
-				}()
-			*/
+			defer database.Close()
 
 			// Setup UI
 			if flags.BasicAuth && flags.BasicAuthPass == "" {
@@ -100,8 +83,7 @@ func Execute() error {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	rootCmd.PersistentFlags().StringVar(&flags.DatabaseURI, "database-uri", "mongodb://127.0.0.1:27017", "MongoDB database URI")
-	rootCmd.PersistentFlags().StringVar(&flags.Database, "database", "xsserve_db", "MongoDB database name")
+	rootCmd.PersistentFlags().StringVar(&flags.DatabaseURI, "database-uri", "xsserve.db", "Database URI to use")
 	rootCmd.PersistentFlags().StringVarP(&flags.Domain, "domain", "d", "", "Domain name to use")
 	rootCmd.PersistentFlags().BoolVar(&flags.IsHTTPS, "https", false, "Serve XSS over HTTPS")
 	rootCmd.PersistentFlags().StringVar(&flags.HTTPSCert, "https-cert", "", "Certificate path")

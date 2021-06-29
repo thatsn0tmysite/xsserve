@@ -12,7 +12,6 @@ The project is in a VERY bare bone state right now, so if you want a prime exper
 
 ## 🏁 Goals
 The initial goal is to allow users to use the same service, but in a self-contained way for lazy penetration testers, like myself.
-Currently I am using MongoDB as a backend, but I'd really love a serverless nosql database as a default option. I wasn't able to find any.
 
 The final goal is still unclear as the project might evolve as different needs arise. 
 
@@ -30,10 +29,10 @@ If you want to get in touch hit me up on [twitter](https://twitter.com/thatsn0tm
 Here is a list of TODO I have handy, there is much more to do:
 
 - [x] Basic functionality
-- [ ] Replace DB to a serverless DB
+- [x] Replace DB
 - [ ] Dashboard
-- [ ] Decent UI 
-- [ ] Logo
+- [x] Decent UI 
+- [x] Logo
 - [ ] Dynamic blind.js file
 - [ ] blind.js other fixes / simplify code 
 - [ ] Dynamic hook.js file

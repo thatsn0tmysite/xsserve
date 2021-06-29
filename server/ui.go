@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -12,8 +13,6 @@ import (
 	"xsserve/database"
 
 	"github.com/tebeka/selenium"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 var flags *core.Flags
@@ -39,6 +38,7 @@ func ServeUI(currentFlags *core.Flags) (err error) {
 
 	mux.Handle("/favicon.ico", favicon)
 	mux.Handle("/dashboard", index)
+	mux.Handle("/", index)
 	mux.Handle("/triggers", triggers)
 	mux.Handle("/report", report)
 	mux.Handle("/payloads", payloads)
@@ -97,13 +97,10 @@ func triggersHandle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var triggers []core.Trigger
-	cursor, err := database.DB.Collection("triggers").Find(database.CTX, bson.M{})
+	triggers, err := database.GetTriggers()
 	if err != nil {
-		log.Println(err)
-		http.Error(w, "Internal Server Error", 500)
+		log.Println(err.Error())
 	}
-	cursor.All(database.CTX, &triggers)
 
 	err = tmpl.Execute(w, triggers)
 	if err != nil {
@@ -121,29 +118,34 @@ func hijackSessionHandle(w http.ResponseWriter, r *http.Request) {
 	wd, err := selenium.NewRemote(caps, flags.SeleniumURL)
 	if err != nil {
 		log.Println(err)
+		http.Error(w, "Internal Server Error", 500)
+		return
 	}
 	//defer wd.Quit()
 
-	objID, err := primitive.ObjectIDFromHex(r.URL.Query().Get("id"))
+	id, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "Internal Server Error", 500)
+		return
 	}
 
-	var trigger core.Trigger
-	err = database.DB.Collection("triggers").FindOne(database.CTX, bson.M{"_id": objID.Hex()}).Decode(&trigger)
+	trigger := core.Trigger{ID: id}
+	err = database.GetTrigger(&trigger)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "Internal Server Error", 500)
+		return
 	}
 
-	// Navigate to the simple playground interface. //
-	if err := wd.Get(trigger.URI); err != nil {
+	// Instruct node to navigate to target URI
+	if err = wd.Get(trigger.URI); err != nil {
 		log.Println(err)
 		http.Error(w, "Internal Server Error", 500)
+		return
 	}
 
-	// Set the cookies
+	// Instruct node to set the cookies
 	for _, cookie := range trigger.Cookies {
 		log.Println(cookie)
 		wd.AddCookie(&selenium.Cookie{
@@ -169,23 +171,26 @@ func reportHandle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	objID, err := primitive.ObjectIDFromHex(r.URL.Query().Get("id"))
+	id, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "Internal Server Error", 500)
+		return
 	}
 
-	var trigger core.Trigger
-	err = database.DB.Collection("triggers").FindOne(database.CTX, bson.M{"_id": objID.Hex()}).Decode(&trigger)
+	trigger := core.Trigger{ID: id}
+	err = database.GetTrigger(&trigger)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "Internal Server Error", 500)
+		return
 	}
 
 	err = tmpl.Execute(w, trigger)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "Internal Server Error", 500)
+		return
 	}
 }
 
@@ -193,14 +198,14 @@ func deleteTriggerHandle(w http.ResponseWriter, r *http.Request) {
 	/*Basic auth*/
 	checkAutorization(w, r)
 
-	objID, err := primitive.ObjectIDFromHex(r.URL.Query().Get("id"))
+	id, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "Internal Server Error", 500)
 	}
 
-	database.DB.Collection("triggers").DeleteOne(database.CTX, bson.M{"_id": objID.Hex()})
-
+	trigger := core.Trigger{ID: id}
+	database.DeleteTrigger(&trigger)
 	http.Redirect(w, r, "/triggers", http.StatusSeeOther)
 }
 
@@ -216,13 +221,12 @@ func payloadsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var payloads []core.Payload
-	cursor, err := database.DB.Collection("payloads").Find(database.CTX, bson.M{})
+	payloads, err := database.GetPayloads()
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "Internal Server Error", 500)
+		return
 	}
-	cursor.All(database.CTX, &payloads)
 
 	var protocol, endpoint, url string
 	protocol = "http"
@@ -243,6 +247,7 @@ func payloadsHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "Internal Server Error", 500)
+		return
 	}
 }
 
@@ -250,19 +255,22 @@ func getScreenshotHandler(w http.ResponseWriter, r *http.Request) {
 	/*Basic auth*/
 	checkAutorization(w, r)
 
-	objID, err := primitive.ObjectIDFromHex(r.URL.Query().Get("id"))
+	id, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "Internal Server Error", 500)
+		return
 	}
 
-	var trigger core.Trigger
-	err = database.DB.Collection("triggers").FindOne(database.CTX, bson.M{"_id": objID.Hex()}).Decode(&trigger)
+	trigger := core.Trigger{ID: id}
+	err = database.GetTrigger(&trigger)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "Internal Server Error", 500)
+		return
 	}
 
+	//TODO CHECK IMAGE WHY IS IT BROKEN??!?!?
 	w.Header().Add("Content-type", "image/png")
 	w.Write(trigger.Screenshot)
 }
