@@ -29,9 +29,9 @@
             <td><a href="{{$trigger.URI}}">{{$trigger.URI}}</a></td>
             <td><a href="/get/screenshot?id={{$trigger.ID}}"><img widht="200px" height="200px" src="/get/screenshot?id={{$trigger.ID}}"></a></td>
             <td>
-                <button type="button" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="View report" onclick="window.location.href='/report?id={{$trigger.ID}}'"><i class="far fa-file-image"></i></button>
-                <button type="button" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="Hijack session" onclick="window.location.href='/hijack?id={{$trigger.ID}}'"><i class="fas fa-skull"></i></button>
-                <button type="button" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="Remove trigger" onclick="window.location.href='/delete?id={{$trigger.ID}}'"><i class="fas fa-trash"></i></button>
+                <button type="button" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="View report" onclick="window.location.href='/triggers/report?id={{$trigger.ID}}'"><i class="far fa-file-image"></i></button>
+                <button type="button" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="Hijack session" onclick="window.location.href='/triggers/hijack?id={{$trigger.ID}}'"><i class="fas fa-skull"></i></button>
+                <button type="button" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="Remove trigger" onclick="window.location.href='/triggers/delete?id={{$trigger.ID}}'"><i class="fas fa-trash"></i></button>
             </td>
         </tr>
         {{end}}
