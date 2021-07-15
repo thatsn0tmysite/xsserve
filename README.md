@@ -24,7 +24,7 @@ go run main.go [options]
 
 To build it:
 ```
-go build main.go xsserve
+go build xsserve
 ```
 
 ## 👋 Contributing
