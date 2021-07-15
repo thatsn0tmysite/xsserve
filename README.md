@@ -15,6 +15,17 @@ The initial goal is to allow users to use the same service, but in a self-contai
 
 The final goal is still unclear as the project might evolve as different needs arise. 
 
+## 🔧 Build
+This project requires at least `golang >= 1.16`, as it makes use of the `embed` package.
+To run the project:
+```
+go run main.go [options]
+```
+
+To build it:
+```
+go build main.go xsserve
+```
 
 ## 👋 Contributing
 Currently I'd love some help with:
