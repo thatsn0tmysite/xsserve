@@ -2,11 +2,17 @@ package server
 
 import (
 	"bytes"
+	"crypto/rand"
+	"crypto/rsa"
 	"crypto/tls"
+	"crypto/x509"
+	"crypto/x509/pkix"
 	"encoding/base64"
 	"encoding/json"
+	"encoding/pem"
 	"fmt"
 	"log"
+	"math/big"
 	"net/http"
 	"strconv"
 	"strings"
@@ -51,9 +57,10 @@ func ServeXSS(currentFlags *core.Flags) (err error) {
 	//TODO: check if HTTPS, then serve over TLS otherwise HTTP
 	//TODO: if no certificates provided and HTTPS is enabled generate certificates
 	_, err = tls.LoadX509KeyPair(flags.HTTPSCert, flags.HTTPSKey)
+	safeFallback := false
 	if err != nil && flags.IsHTTPS {
 		log.Println("Certificate or key file not found or invalid:", err)
-		return
+		safeFallback = true
 	}
 
 	server := &http.Server{
@@ -64,8 +71,30 @@ func ServeXSS(currentFlags *core.Flags) (err error) {
 		MaxHeaderBytes: 1 << 20,
 	}
 
-	if flags.IsHTTPS {
+	if flags.IsHTTPS && !safeFallback {
 		err = server.ListenAndServeTLS(flags.HTTPSCert, flags.HTTPSKey)
+	} else if flags.IsHTTPS && safeFallback {
+		// Generate a key pair from your pem-encoded cert and key ([]byte).
+		log.Println("Generating fallback self-signed certificate...")
+		keyBytes, certBytes, err := GenerateX509KeyPair(flags.Domain)
+		if err != nil {
+			log.Fatal(err)
+			return err
+		}
+
+		cert, err := tls.X509KeyPair(certBytes, keyBytes)
+		if err != nil {
+			log.Fatal(err)
+			return err
+		}
+
+		// Construct a tls.config
+		tlsConfig := &tls.Config{
+			Certificates: []tls.Certificate{cert},
+		}
+		server.TLSConfig = tlsConfig
+
+		err = server.ListenAndServeTLS("", "")
 	} else {
 		err = server.ListenAndServe()
 	}
@@ -199,4 +228,47 @@ func apiHandle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Println("Inserted into db:", t)
+}
+
+func GenerateX509KeyPair(hostname string) (priv []byte, pub []byte, err error) {
+	privatekey, err := rsa.GenerateKey(rand.Reader, 4096)
+	if err != nil {
+		return nil, nil, err
+	}
+	publickey := &privatekey.PublicKey
+
+	privateKeyBytes := x509.MarshalPKCS1PrivateKey(privatekey)
+	privateKeyBlock := &pem.Block{
+		Type:  "RSA PRIVATE KEY",
+		Bytes: privateKeyBytes,
+	}
+
+	max := new(big.Int)
+	sn, err := rand.Int(rand.Reader, max.Exp(big.NewInt(2), big.NewInt(130), nil).Sub(max, big.NewInt(1))) //TODO: verify this is secure...
+	if err != nil {
+		return nil, nil, err
+	}
+
+	tml := x509.Certificate{
+		NotBefore:    time.Now(),
+		NotAfter:     time.Now().AddDate(1, 0, 0),
+		SerialNumber: sn,
+		Subject: pkix.Name{
+			CommonName:   hostname,
+			Organization: []string{"n/a"},
+		},
+		BasicConstraintsValid: true,
+	}
+
+	cert, err := x509.CreateCertificate(rand.Reader, &tml, &tml, publickey, privatekey)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	publicKeyBlock := &pem.Block{
+		Type:  "CERTIFICATE",
+		Bytes: cert,
+	}
+
+	return pem.EncodeToMemory(privateKeyBlock), pem.EncodeToMemory(publicKeyBlock), err
 }
