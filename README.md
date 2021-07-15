@@ -37,7 +37,7 @@ Here is a list of TODO I have handy, there is much more to do:
 - [ ] blind.js other fixes / simplify code 
 - [ ] Dynamic hook.js file
 - [ ] Allow custom files served by /c 
-- [ ] Self-signed HTTPS certificate on startup
+- [x] Self-signed HTTPS certificate on startup
 - [ ] Minor mimetype issues
 - [ ] Better report details page
 - [ ] Export reports to md file
