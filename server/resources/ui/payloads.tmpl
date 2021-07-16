@@ -16,6 +16,7 @@
             <td><input class="input" type="text" value="{{$payload.Code}}"></td>
             <td>
                 <button type="button" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy" onclick="copyToClipboard(this.parentNode.parentNode.getElementsByTagName('input')[0])">📄</button>
+                <button type="button" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="Remove payload" onclick="window.location.href='/payloads/delete?id={{$payload.ID}}'"><i class="fas fa-trash"></i></button>
             </td>
         </tr>
         {{end}}
