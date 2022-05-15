@@ -1,0 +1,40 @@
+#back2Top {
+    width: 40px;
+    line-height: 40px;
+    overflow: hidden;
+    z-index: 999;
+    display: none;
+    cursor: pointer;
+    -moz-transform: rotate(270deg);
+    -webkit-transform: rotate(270deg);
+    -o-transform: rotate(270deg);
+    -ms-transform: rotate(270deg);
+    transform: rotate(270deg);
+    position: fixed;
+    bottom: 50px;
+    right: 0;
+    background-color: #191919;
+    color: #ccc;
+    text-align: center;
+    font-size: 30px;
+    text-decoration: none;
+    border-radius: 8px 8px 0px 0px;
+}
+#back2Top:hover {
+    color: #aaa;
+}
+#copy-box {
+    position: absolute;
+    top: 0px;
+    margin-left: 50px;
+    z-index: 100;
+    width: 420px;
+    border-radius: 3px;
+}
+#copy-box-input {
+    width: 400px;
+}
+.label-copy {
+    border-radius: 3px;
+    cursor: pointer;
+}

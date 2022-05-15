@@ -4,8 +4,26 @@
 {{define "main"}}
     <h2>📦 Payloads</h2>
     <p>Here is a list of pre-made payloads, for the lazy ones!</p>
-    <p><a href="#needsmodal">➕ Add Payload</a></p>
-    <table class="table table-dark">
+    <p><a href="" data-target="add-payload-modal" onClick="toggleModal(event)">➕ Add Payload</a></p>
+    <dialog id="add-payload-modal">
+        <article>
+            <a href="#close" aria-label="Close" class="close" data-target="add-payload-modal" onClick="toggleModal(event)"></a>
+            <h3>Add a new payload</h3>
+
+            <p>
+                Cras sit amet maximus risus. 
+                Pellentesque sodales odio sit amet augue finibus pellentesque. 
+                Nullam finibus risus non semper euismod.
+            </p>
+
+            <footer>
+                <a href="#cancel" role="button" class="secondary" data-target="add-payload-modal" onClick="toggleModal(event)"> Cancel </a>
+                <a href="#confirm" role="button" data-target="add-payload-modal" onClick="toggleModal(event)"> Confirm </a>
+            </footer>
+        </article>
+    </dialog>
+
+    <table>
         <tr>
             <th>Description</th>
             <th>Payload</th>
@@ -16,8 +34,8 @@
             <td>{{$payload.Description}}</td>
             <td><input class="input" type="text" value="{{$payload.Code}}"></td>
             <td>
-                <button type="button" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy" onclick="copyToClipboard(this.parentNode.parentNode.getElementsByTagName('input')[0])">📄</button>
-                <button type="button" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="Remove payload" onclick="window.location.href='/payloads/delete?id={{$payload.ID}}'"><i class="fas fa-trash"></i></button>
+                <button type="button" data-tooltip="Copy" onclick="copyToClipboard(this.parentNode.parentNode.getElementsByTagName('input')[0])">📄</button>
+                <button type="button" data-tooltip="Remove payload" onclick="window.location.href='/payloads/delete?id={{$payload.ID}}'"><i class="fas fa-trash"></i></button>
             </td>
         </tr>
         {{end}}
