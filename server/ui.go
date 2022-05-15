@@ -23,9 +23,6 @@ func ServeUI(currentFlags *core.Flags) (err error) {
 
 	mux := http.NewServeMux()
 
-	//redirectHandler := http.RedirectHandler("http://example.org", 307)
-	//mux.Handle("/foo", rh)
-	//notFoundHandler := http.NotFoundHandler()
 	favicon := http.RedirectHandler("/static/resources/ui/images/favicon.ico", http.StatusTemporaryRedirect)
 	index := http.HandlerFunc(indexHandle)
 	report := http.HandlerFunc(reportHandle)
