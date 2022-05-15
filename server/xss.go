@@ -219,6 +219,10 @@ func apiHandle(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println("Failed decoding image:", err)
 	}
+	log.Println(j)
+	log.Println(b64data)
+	log.Println(t.Screenshot)
+	log.Println(r.Body)
 
 	// Insert trigger to DB
 	_, err = database.InsertTrigger(&t)
