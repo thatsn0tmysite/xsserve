@@ -44,9 +44,10 @@ Here is a list of TODO I have handy, there is much more to do:
 - [ ] Dashboard
 - [x] Decent UI 
 - [x] Logo
-- [ ] Dynamic blind.js file
-- [ ] blind.js other fixes / simplify code 
+- [x] Dynamic blind.js file
+- [x] blind.js other fixes / simplify code 
 - [ ] Dynamic hook.js file
+- [ ] Plugin system for hook.js (capabilityEnum, webcam/mic, live, BitB, keylogger, eventHook)
 - [ ] Allow custom files served by /c 
 - [x] Self-signed HTTPS certificate on startup
 - [ ] Minor mimetype issues

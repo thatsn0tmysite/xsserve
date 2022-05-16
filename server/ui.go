@@ -285,7 +285,6 @@ func getScreenshotHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//TODO CHECK IMAGE WHY IS IT BROKEN??!?!?
 	w.Header().Add("Content-type", "image/png")
 	w.Write(trigger.Screenshot)
 }

@@ -99,6 +99,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&flags.BasicAuthPass, "auth-pass", "", "Basic-auth password")
 	rootCmd.PersistentFlags().StringVar(&flags.SeleniumURL, "selenium-url", "http://127.0.0.1:4444/wd/hub", "Selenium node to use")
 	rootCmd.PersistentFlags().StringVar(&flags.SeleniumBrowser, "selenium-browser", "firefox", "Selenium driver to use")
+	rootCmd.PersistentFlags().StringVar(&flags.HookPluginsPath, "hook-plugins", "plugins", "Path to hook.js plugins")
 
 	viper.BindPFlag("DatabaseURI", rootCmd.PersistentFlags().Lookup("database-uri"))
 	viper.BindPFlag("Database", rootCmd.PersistentFlags().Lookup("database"))
@@ -116,6 +117,7 @@ func init() {
 	viper.BindPFlag("BasicAuthPass", rootCmd.PersistentFlags().Lookup("auth-pass"))
 	viper.BindPFlag("SeleniumURL", rootCmd.PersistentFlags().Lookup("selenium-url"))
 	viper.BindPFlag("SeleniumBrowser", rootCmd.PersistentFlags().Lookup("selenium-browser"))
+	viper.BindPFlag("HookPluginsPath", rootCmd.PersistentFlags().Lookup("hook-plugins"))
 
 }
 

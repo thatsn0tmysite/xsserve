@@ -2,19 +2,73 @@
 {{define "title"}}Report{{end}}
 
 {{define "main"}}
-    <h2>Report</h2>
-    <p>Here is the report page for: {{.UID}} ({{.ID}})</p>
-    <p>Host: {{.Host}}</p>
-    <p>URI: <a href="{{.URI}}">{{.URI}}</a></p>
-    <p>Origin: {{.Origin}}</p>
-    <p>BrowserDate: {{.BrowserDate}}</p>
-    <p>UserAgent: {{.UserAgent}}</p>
-    <p>Referrer: {{.Referrer}}</p>
-    <p>Cookies: {{.Cookies}}</p>
-    <p>Payload: {{.Payload}}</p>
-    <p>Date: {{.Date}}</p>
-    <p>DOM: <textarea cols=10 readonly> {{.DOM}} </textarea> </p>
-    <p>Screenshot: <img src="/get/screenshot?id={{ .ID }}"> </p>
-    <p>Live view: TODO. </p>
-    <p>Control: TODO. </p>
+<dialog id="spy-modal">
+    <article>
+        <a href="#close" aria-label="Close" class="close" data-target="spy-modal" onClick="toggleModal(event)"></a>
+        <h3>Spy</h3>
+
+        <div id="#spyfeed">
+            NO FEED
+        </div>
+
+        <footer>
+            <a href="#cancel" role="button" class="secondary" data-target="spy-modal" onClick="toggleModal(event)"> Disable </a>
+            <a href="#confirm" role="button" data-target="spy-modal" onClick="toggleModal(event)"> Enable </a>
+        </footer>
+    </article>
+</dialog>
+
+<h2>
+    <i class="far fa-file-image"></i> Report - ID {{.ID}}
+</h2>
+
+<div class="grid">
+    <article>
+        <header><i class="fa fa-laptop"></i> <b>Host info</b></header>
+
+        <div><b>Status:</b> N/A</div>
+        <div><b>Date:</b> {{.Date}}</div>
+        <div><b>RemoteAddress:</b> {{.RemoteAddr}}</div>
+        <div><b>Host:</b> {{.Host}}</div>
+        <div><b>Payload:</b> {{.Payload}}</div>
+    </article>
+
+    <article>
+        <header><i class="fa fa-clock-o"></i> <b>Browser info</b></header>
+
+        <div><b>Fingerprint:</b> {{.UID}} </div>
+        <div><b>UserAgent:</b> {{.UserAgent}}</div>
+        <div><b>BrowserDate:</b> {{.BrowserDate}}</div>
+        <div><b>Referrer:</b> {{.Referrer}}</div>
+        <div><b>URI:</b> <a href="{{.URI}}">{{.URI}}</a></div>
+        <div><b>Origin:</b> {{.Origin}}</div>
+        <div><b>Cookies:</b> {{.Cookies}}</div>
+    </article>
+    
+    <article>    
+        <header><i class="fa fa-cogs"></i> <b>Controls</b></header>
+
+        <div>
+            <button type="button" data-tooltip="Spy mode" data-target="spy-modal" onClick="toggleModal(event)"><i class="fa fa-user-secret"></i></button>
+            <button type="button" data-tooltip="Hijack session" onclick="window.location.href='/triggers/hijack?id={{.ID}}'"><i class="fas fa-skull"></i></button>
+            <button type="button" class="secondary" data-tooltip="Delete report" onclick="window.location.href='/triggers/delete?id={{.ID}}'"><i class="fas fa-trash"></i></button>
+        </div>
+    </article>
+</div>
+
+<div>
+    <article>
+        <header> 
+                <b>Screenshot:</b>
+        </header>
+        <a href="/get/screenshot?id={{ .ID }}"><img src="/get/screenshot?id={{ .ID }}"></a>
+        <footer>
+            <details>
+                <summary><i class="fa fa-code"></i> View page DOM</summary>
+                <textarea readonly> {{.DOM}} </textarea>
+            </details>
+        </footer>
+    </article>
+    
+</div>
 {{end}}

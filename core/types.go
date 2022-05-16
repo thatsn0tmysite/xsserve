@@ -24,6 +24,7 @@ type Flags struct {
 	BasicAuthPass   string // Basic authentication password
 	SeleniumURL     string // Selenium node to use
 	SeleniumBrowser string // Selenium driver to use
+	HookPluginsPath string // Path to hook.js plugins
 }
 
 type Payload struct {

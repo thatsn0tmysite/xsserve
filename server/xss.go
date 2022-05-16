@@ -114,6 +114,18 @@ func hookHandle(w http.ResponseWriter, r *http.Request) {
 		log.Println(r)
 		return
 	}
+
+	var protocol, endpoint string
+	protocol = "http"
+	if flags.IsHTTPS {
+		protocol = "https"
+	}
+	endpoint = flags.XSSAddress
+	if flags.Domain != "" {
+		endpoint = flags.Domain
+	}
+	hook = bytes.ReplaceAll(hook, []byte("[[HOST_REPLACE_ME]]"), []byte(fmt.Sprintf("%v://%v:%v", protocol, endpoint, flags.XSSPort)))
+
 	_, err = w.Write(hook)
 	if err != nil {
 		log.Println("Failed to write response:", err)
