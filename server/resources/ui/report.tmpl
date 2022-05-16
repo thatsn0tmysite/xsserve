@@ -19,22 +19,22 @@
 </dialog>
 
 <h2>
-    <i class="far fa-file-image"></i> Report - ID {{.ID}}
+    <i class="fa fa-file-text"></i> Report - ID {{.ID}}
 </h2>
 
 <div class="grid">
     <article>
-        <header><i class="fa fa-laptop"></i> <b>Host info</b></header>
+        <header><i class="fa fa-laptop"></i> <b>Trigger info</b></header>
 
         <div><b>Status:</b> N/A</div>
         <div><b>Date:</b> {{.Date}}</div>
-        <div><b>RemoteAddress:</b> {{.RemoteAddr}}</div>
-        <div><b>Host:</b> {{.Host}}</div>
+        <div><b>RemoteAddress:</b> {{.RemoteAddr}}<a href="https://whois.domaintools.com/{{.RemoteAddr}}"><i class="fa fa-external-link"></i></a></div>
+        <div><b>Host:</b> {{.Host}}<a href="https://whois.domaintools.com/{{.Host}}"><i class="fa fa-external-link"></i></a></div>
         <div><b>Payload:</b> {{.Payload}}</div>
     </article>
 
     <article>
-        <header><i class="fa fa-clock-o"></i> <b>Browser info</b></header>
+        <header><i class="fa fa-plane"></i> <b>Browser info</b></header>
 
         <div><b>Fingerprint:</b> {{.UID}} </div>
         <div><b>UserAgent:</b> {{.UserAgent}}</div>
@@ -59,7 +59,7 @@
 <div>
     <article>
         <header> 
-                <b>Screenshot:</b>
+            <i class="far fa-file-image"></i> <b>Screenshot:</b>
         </header>
         <a href="/get/screenshot?id={{ .ID }}"><img src="/get/screenshot?id={{ .ID }}"></a>
         <footer>
