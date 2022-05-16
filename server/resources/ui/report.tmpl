@@ -5,7 +5,7 @@
 <dialog id="spy-modal">
     <article>
         <a href="#close" aria-label="Close" class="close" data-target="spy-modal" onClick="toggleModal(event)"></a>
-        <h3>Spy</h3>
+        <h3><i class="fa fa-user-secret"></i> Spy</h3>
 
         <div id="#spyfeed">
             NO FEED
@@ -17,7 +17,21 @@
         </footer>
     </article>
 </dialog>
+<dialog id="eval-js-modal">
+    <article>
+        <a href="#close" aria-label="Close" class="close" data-target="eval-js-modal" onClick="toggleModal(event)"></a>
+        <h3><i class="fa fa-terminal"></i> Eval JS</h3>
 
+        <div id="#evaljs">
+            EVAL JS
+        </div>
+
+        <footer>
+            <a href="#cancel" role="button" class="secondary" data-target="eval-js-modal" onClick="toggleModal(event)"> Cancel </a>
+            <a href="#confirm" role="button" data-target="eval-js-modal" onClick="toggleModal(event)"> Execute </a>
+        </footer>
+    </article>
+</dialog>
 <h2>
     <i class="fa fa-file-text"></i> Report - ID {{.ID}}
 </h2>
@@ -26,10 +40,10 @@
     <article>
         <header><i class="fa fa-laptop"></i> <b>Trigger info</b></header>
 
-        <div><b>Status:</b> N/A</div>
+        <div><b>Status:</b> {{if or (eq .Status "online") (eq .Status "offline")}}.Status{{else}}n/a{{end}}</div>
         <div><b>Date:</b> {{.Date}}</div>
-        <div><b>RemoteAddress:</b> {{.RemoteAddr}}<a href="https://whois.domaintools.com/{{.RemoteAddr}}"><i class="fa fa-external-link"></i></a></div>
-        <div><b>Host:</b> {{.Host}}<a href="https://whois.domaintools.com/{{.Host}}"><i class="fa fa-external-link"></i></a></div>
+        <div><b>RemoteAddress:</b> {{.RemoteAddr}}</div>
+        <div><b>Host:</b> {{.Host}}{{if .Host}}<a href="https://whois.domaintools.com/{{.Host}}"> <i class="fa fa-external-link"></i></a>{{end}}</div>
         <div><b>Payload:</b> {{.Payload}}</div>
     </article>
 
@@ -51,6 +65,7 @@
         <div>
             <button type="button" data-tooltip="Spy mode" data-target="spy-modal" onClick="toggleModal(event)"><i class="fa fa-user-secret"></i></button>
             <button type="button" data-tooltip="Hijack session" onclick="window.location.href='/triggers/hijack?id={{.ID}}'"><i class="fas fa-skull"></i></button>
+            <button type="button" data-tooltip="Eval javascript" data-target="eval-js-modal" onclick="toggleModal(event)"><i class="fa fa-terminal"></i></button>
             <button type="button" class="secondary" data-tooltip="Delete report" onclick="window.location.href='/triggers/delete?id={{.ID}}'"><i class="fas fa-trash"></i></button>
         </div>
     </article>

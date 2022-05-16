@@ -56,6 +56,7 @@ type Trigger struct {
 	UserAgent   string
 	Referrer    string
 	Cookies     []*http.Cookie
+	Status 		string
 	//Live      bool //if online now allow hook injection to perform man in the browser?
 }
 
