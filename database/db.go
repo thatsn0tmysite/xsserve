@@ -68,6 +68,18 @@ func initialize() (err error) {
 		PRIMARY KEY("id")
 	)`)
 
+	db.Query(`CREATE TABLE IF NOT EXISTS "TriggerCommands" (
+		"id"	INTEGER NOT NULL UNIQUE,
+		"TriggerId"	INTEGER NOT NULL,
+		"QueuePosition"	INTEGER,
+		"IssuedAt" TEXT,
+		"RepliedAt" TEXT,
+		"Code" TEXT,
+		"Result" TEXT,
+		PRIMARY KEY("id"),
+		FOREIGN KEY(TriggerId) REFERENCES Triggers(id)
+	)`)
+
 	/*Check if we have and empty table, if so add the default payloads*/
 	var count int
 	rows := db.QueryRow("SELECT COUNT(*) from Payloads")
@@ -199,6 +211,44 @@ func GetTrigger(trigger *core.Trigger) (err error) {
 	}
 
 	return err
+}
+
+func GetCommandsForTrigger (trigger *core.Trigger) ([]string, error) {
+	//rows, err := db.Query(`SELECT Code FROM TriggerCommands WHERE TriggerId=? AND Result IS NOT NULL ORDER BY QueuePosition`, trigger.ID)
+	//rows, err := db.Query(`SELECT * FROM TriggerCommands WHERE TriggerId=? AND Result IS NOT NULL ORDER BY QueuePosition`, trigger.ID)
+	
+	log.Println("GetCommandsForTrigger: not implemented.")
+	return trigger.Commands, nil;
+}
+
+func InsertCommandsForTrigger (trigger *core.Trigger) (r sql.Result, err error) {
+	/*
+			"id"	INTEGER NOT NULL UNIQUE,
+		"TriggerId"	INTEGER NOT NULL,
+		"QueuePosition"	INTEGER,
+		"IssuedAt" TEXT,
+		"RepliedAt" TEXT,
+		"Code" TEXT,
+		"Result" TEXT,
+		PRIMARY KEY("id"),
+		FOREIGN KEY(TriggerId) REFERENCES Triggers(id)
+	*/
+	commands, err := GetCommandsForTrigger(trigger)
+	if err != nil {
+		return r, err
+	}
+	queue = len(commands)
+
+	r, err = db.Exec(`INSERT INTO "TriggerCommands" (
+		id,
+		RepliedAt,
+		Result,
+		TriggerId, 
+		QueuePosition,
+		IssuedAt,
+		Code,
+		) VALUES (NULL, NULL, NULL, ?, ?, ?, ?)`, trigger.ID, queue)
+	return r, err
 }
 
 /*TODO: eventually allow filtering given a trigger struct*/

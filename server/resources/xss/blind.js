@@ -8362,7 +8362,8 @@ try {
 	results["BrowserDate"] = "";
 }
 try {
-	results["UID"] = never_null(get_uid()); //browser fingerprint
+	const digest = window.crypto.subtle.digest("SHA-256", get_uid());
+	results["UID"] = never_null(digest); //browser fingerprint
 } catch (e) {
 	results["UID"] = "";
 }

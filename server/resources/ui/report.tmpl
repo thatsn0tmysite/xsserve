@@ -22,18 +22,19 @@
         <a href="#close" aria-label="Close" class="close" data-target="eval-js-modal" onClick="toggleModal(event)"></a>
         <h3><i class="fa fa-terminal"></i> Eval JS</h3>
 
-        <div id="#evaljs">
-            EVAL JS
+        <div id="#evaljs" class="grid">
+            <textarea id="eviljs" placeholder="Evil js goes here"></textarea>
         </div>
 
         <footer>
             <a href="#cancel" role="button" class="secondary" data-target="eval-js-modal" onClick="toggleModal(event)"> Cancel </a>
-            <a href="#confirm" role="button" data-target="eval-js-modal" onClick="toggleModal(event)"> Execute </a>
+            <a href="#confirm" role="button" data-target="eval-js-modal" onClick="sendEvilJs()"> Execute </a>
         </footer>
     </article>
 </dialog>
 <h2>
     <i class="fa fa-file-text"></i> Report - ID {{.ID}}
+    <input id="trigger-id" type="hidden" value="{{.ID}}"></input>
 </h2>
 
 <div class="grid">

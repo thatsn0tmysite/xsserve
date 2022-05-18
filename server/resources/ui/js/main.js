@@ -6,6 +6,25 @@ function copyToClipboard(element) {
 	document.execCommand("copy");
 }
 
+/** EVILJS MODAL **/
+function sendEvilJs() {
+	var code = document.getElementById("eviljs").value;
+	//var result = document.getElementById("eviljs-result").value;
+	var trigger_id = document.getElementById("trigger-id").value;
+
+	var http = new XMLHttpRequest();
+	var url = `/send/js?id=${trigger_id}`;
+	var params = `code=${code}`
+	http.open("POST", url, true);
+	http.setRequestHeader("Content-type", "application/json");
+	http.onreadystatechange = function () {
+		if (http.readyState == 4 && http.status == 200) {
+			console.log(http.responseText)
+		}
+	};
+	http.send(params);
+}
+
 /** MODAL **/
 // Modal Config
 const isOpenClass = "modal-is-open";

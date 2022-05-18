@@ -57,8 +57,22 @@ type Trigger struct {
 	Referrer    string
 	Cookies     []*http.Cookie
 	Status 		string
-	//Live      bool //if online now allow hook injection to perform man in the browser?
+	Commands    []string //[]TriggerCommand
+	Online      bool
 }
+
+/*
+type TriggerCommand {
+	ID	int
+	TriggerId int
+	QueuePosition int
+	IssuedAt string
+	RepliedAt string
+	Code string
+	Result string
+}
+*/
+
 
 func (trigger Trigger) String() string {
 	return fmt.Sprintf("%v : %v :: %v", trigger.ID, trigger.Date.String(), trigger.Host)
