@@ -215,29 +215,29 @@ func GetTrigger(trigger *core.Trigger) (err error) {
 
 func GetCommandsForTrigger (trigger *core.Trigger) ([]string, error) {
 	//rows, err := db.Query(`SELECT Code FROM TriggerCommands WHERE TriggerId=? AND Result IS NOT NULL ORDER BY QueuePosition`, trigger.ID)
-	//rows, err := db.Query(`SELECT * FROM TriggerCommands WHERE TriggerId=? AND Result IS NOT NULL ORDER BY QueuePosition`, trigger.ID)
+	rows, err := db.Query(`SELECT * FROM TriggerCommands WHERE TriggerId=? AND Result IS NOT NULL ORDER BY QueuePosition`, trigger.ID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var commands []string
+	for rows.Next() {
+		var c core.TriggerCommand
+		rows.Scan(&c)
+		commands = append(commands, c.Code)
+	}
 	
-	log.Println("GetCommandsForTrigger: not implemented.")
-	return trigger.Commands, nil;
+	log.Println(commands)
+	return commands, nil;
 }
 
-func InsertCommandsForTrigger (trigger *core.Trigger) (r sql.Result, err error) {
-	/*
-			"id"	INTEGER NOT NULL UNIQUE,
-		"TriggerId"	INTEGER NOT NULL,
-		"QueuePosition"	INTEGER,
-		"IssuedAt" TEXT,
-		"RepliedAt" TEXT,
-		"Code" TEXT,
-		"Result" TEXT,
-		PRIMARY KEY("id"),
-		FOREIGN KEY(TriggerId) REFERENCES Triggers(id)
-	*/
+func InsertCommandForTrigger (trigger *core.Trigger, command string) (r sql.Result, err error) {
 	commands, err := GetCommandsForTrigger(trigger)
 	if err != nil {
 		return r, err
 	}
-	queue = len(commands)
+	queue := len(commands)
 
 	r, err = db.Exec(`INSERT INTO "TriggerCommands" (
 		id,
@@ -246,8 +246,8 @@ func InsertCommandsForTrigger (trigger *core.Trigger) (r sql.Result, err error) 
 		TriggerId, 
 		QueuePosition,
 		IssuedAt,
-		Code,
-		) VALUES (NULL, NULL, NULL, ?, ?, ?, ?)`, trigger.ID, queue)
+		Code
+		) VALUES (NULL, NULL, NULL, ?, ?, ?, ?)`, trigger.ID, queue, time.Now().String(), command)
 	return r, err
 }
 

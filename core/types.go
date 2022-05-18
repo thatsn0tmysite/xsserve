@@ -61,8 +61,7 @@ type Trigger struct {
 	Online      bool
 }
 
-/*
-type TriggerCommand {
+type TriggerCommand struct {
 	ID	int
 	TriggerId int
 	QueuePosition int
@@ -71,7 +70,6 @@ type TriggerCommand {
 	Code string
 	Result string
 }
-*/
 
 
 func (trigger Trigger) String() string {

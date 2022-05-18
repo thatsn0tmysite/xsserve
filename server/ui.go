@@ -91,6 +91,8 @@ func indexHandle(w http.ResponseWriter, r *http.Request) {
 func sendJSHandler(w http.ResponseWriter, r *http.Request) {
 	/*Basic auth*/
 	checkAutorization(w, r)
+	r.ParseForm()
+
 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil {
 		log.Println(err)
@@ -98,23 +100,16 @@ func sendJSHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	r.ParseForm()
-	command, err := r.Post().Get("code")
-	if err != nil {
+	command := r.Form.Get("code")
+	if command == "" {
 		log.Println(err)
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}
-	
-	trigger := core.Trigger{ID: id}
-	commands, err := database.GetCommandsForTrigger(&trigger)
-	if err != nil {
-		log.Println(err)
-		http.Error(w, "Internal Server Error", 500)
-		return
-	}
-	commands := append(commands, command)
+	log.Print("Adding code (",command,") to trigger",id)
 
+	trigger := core.Trigger{ID: id}
+	_, err = database.InsertCommandForTrigger(&trigger, command)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "Internal Server Error", 500)

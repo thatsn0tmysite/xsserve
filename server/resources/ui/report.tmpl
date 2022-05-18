@@ -22,13 +22,13 @@
         <a href="#close" aria-label="Close" class="close" data-target="eval-js-modal" onClick="toggleModal(event)"></a>
         <h3><i class="fa fa-terminal"></i> Eval JS</h3>
 
-        <div id="#evaljs" class="grid">
+        <div id="evaljs" class="grid">
             <textarea id="eviljs" placeholder="Evil js goes here"></textarea>
         </div>
 
         <footer>
             <a href="#cancel" role="button" class="secondary" data-target="eval-js-modal" onClick="toggleModal(event)"> Cancel </a>
-            <a href="#confirm" role="button" data-target="eval-js-modal" onClick="sendEvilJs()"> Execute </a>
+            <a href="#confirm" role="button" data-target="eval-js-modal" onClick="sendEvilJs();toggleModal(event)"> Execute </a>
         </footer>
     </article>
 </dialog>
@@ -70,6 +70,11 @@
             <button type="button" class="secondary" data-tooltip="Delete report" onclick="window.location.href='/triggers/delete?id={{.ID}}'"><i class="fas fa-trash"></i></button>
         </div>
     </article>
+</div>
+
+<div>
+    <!--TODO: add history of sent commands from DB and their status-->
+    SENT BEEF COMMANDS AND RELATED INFO WILL BE SHOWN HERE
 </div>
 
 <div>

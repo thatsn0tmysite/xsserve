@@ -128,12 +128,14 @@ func hookWSHandle(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return
 		}
-
+		//TODO: get all commands in DB and send them over
 		// Print the message to the console
-		fmt.Printf("%s sent: %s\n", conn.RemoteAddr(), string(msg))
+		fmt.Printf("%s SENT %s\n", conn.RemoteAddr(), string(msg))
+
+		//fmt.Printf("%s sent: %s\n", conn.RemoteAddr(), string(msg))
 
 		// Write message back to browser
-		if err = conn.WriteMessage(msgType, msg); err != nil {
+		if err = conn.WriteMessage(msgType, []byte("{\"commands\":[\"alert(1);\"]}")); err != nil {
 			return
 		}
 	}
