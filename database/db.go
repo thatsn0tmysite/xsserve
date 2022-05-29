@@ -213,9 +213,15 @@ func GetTrigger(trigger *core.Trigger) (err error) {
 	return err
 }
 
-func GetCommandsForTrigger (trigger *core.Trigger) ([]string, error) {
-	//rows, err := db.Query(`SELECT Code FROM TriggerCommands WHERE TriggerId=? AND Result IS NOT NULL ORDER BY QueuePosition`, trigger.ID)
-	rows, err := db.Query(`SELECT * FROM TriggerCommands WHERE TriggerId=? AND Result IS NOT NULL ORDER BY QueuePosition`, trigger.ID)
+func GetCommandsForTrigger(trigger *core.Trigger) ([]string, error) {
+	var triggerID int
+	err := db.QueryRow(`SELECT ID FROM Triggers WHERE UID=? LIMIT 1`, trigger.UID).Scan(&triggerID)
+	if err != nil {
+		return nil, err
+	}
+
+	//rows, err := db.Query(`SELECT Code FROM TriggerCommands WHERE TriggerId=? AND Result IS NOT NULL ORDER BY QueuePosition`, triggerID)
+	rows, err := db.Query(`SELECT * FROM TriggerCommands WHERE TriggerID=? ORDER BY QueuePosition`, triggerID)
 	if err != nil {
 		return nil, err
 	}
@@ -224,19 +230,22 @@ func GetCommandsForTrigger (trigger *core.Trigger) ([]string, error) {
 	var commands []string
 	for rows.Next() {
 		var c core.TriggerCommand
-		rows.Scan(&c)
+		err = rows.Scan(&c.ID, &c.TriggerId, &c.QueuePosition, &c.IssuedAt, &c.RepliedAt, &c.Code, &c.Result)
+		if err != nil {
+			break
+		}
 		commands = append(commands, c.Code)
 	}
-	
-	log.Println(commands)
-	return commands, nil;
+
+	//log.Println(commands)
+	return commands, err
 }
 
-func InsertCommandForTrigger (trigger *core.Trigger, command string) (r sql.Result, err error) {
-	commands, err := GetCommandsForTrigger(trigger)
-	if err != nil {
-		return r, err
-	}
+func InsertCommandForTrigger(trigger *core.Trigger, command string) (r sql.Result, err error) {
+	commands, _ := GetCommandsForTrigger(trigger)
+	//if err != nil && err != sql.ErrNoRows {
+	//	return r, err
+	//}
 	queue := len(commands)
 
 	r, err = db.Exec(`INSERT INTO "TriggerCommands" (
@@ -264,7 +273,19 @@ func GetTriggers() (triggers []core.Trigger, err error) {
 }
 
 func DeleteTrigger(trigger *core.Trigger) (err error) {
-	_, err = db.Exec("DELETE FROM Triggers WHERE id=?", trigger.ID)
+	db.Exec("DELETE FROM Triggers WHERE id=?", trigger.ID)
+	_, err = db.Exec("DELETE FROM TriggerCommands WHERE TriggerID=?", trigger.ID)
+	return err
+}
+
+func DeleteTriggerCommands(trigger *core.Trigger) (err error) {
+	var triggerID int
+	err = db.QueryRow(`SELECT ID FROM Triggers WHERE UID=? LIMIT 1`, trigger.UID).Scan(&triggerID)
+	if err != nil {
+		return err
+	}
+
+	_, err = db.Exec("DELETE FROM TriggerCommands WHERE TriggerID=?", triggerID)
 	return err
 }
 

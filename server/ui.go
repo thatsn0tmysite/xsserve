@@ -45,8 +45,7 @@ func ServeUI(currentFlags *core.Flags) (err error) {
 	mux.Handle("/payloads", payloads)
 	mux.Handle("/payloads/delete", deletePayload)
 	mux.Handle("/get/screenshot", getScreenshot)
-	mux.Handle("/send/js", sendJS) 
-
+	mux.Handle("/send/js", sendJS)
 
 	//TODO: fix, The script from “http://host/static/resources/ui/js/main.js” was loaded even though its MIME type (“text/plain”) is not a valid JavaScript MIME type.
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(StaticFS))))
@@ -106,12 +105,12 @@ func sendJSHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}
-	log.Print("Adding code (",command,") to trigger",id)
+	log.Print("Adding code (", command, ") to trigger", id)
 
 	trigger := core.Trigger{ID: id}
 	_, err = database.InsertCommandForTrigger(&trigger, command)
 	if err != nil {
-		log.Println(err)
+		log.Println("ERR jshandler: ", err)
 		http.Error(w, "Internal Server Error", 500)
 	}
 }

@@ -1,6 +1,7 @@
 package core
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
 	"time"
@@ -56,22 +57,27 @@ type Trigger struct {
 	UserAgent   string
 	Referrer    string
 	Cookies     []*http.Cookie
-	Status 		string
+	Status      string
 	Commands    []string //[]TriggerCommand
 	Online      bool
 }
 
 type TriggerCommand struct {
-	ID	int
-	TriggerId int
+	ID            int
+	TriggerId     int
 	QueuePosition int
-	IssuedAt string
-	RepliedAt string
-	Code string
-	Result string
+	IssuedAt      sql.NullString
+	RepliedAt     sql.NullString
+	Code          string
+	Result        sql.NullString
 }
 
-
 func (trigger Trigger) String() string {
-	return fmt.Sprintf("%v : %v :: %v", trigger.ID, trigger.Date.String(), trigger.Host)
+	return fmt.Sprintf("%v (%v): %v :: %v", trigger.ID, trigger.UID, trigger.Date.String(), trigger.Host)
+}
+
+type PollRequestJSON struct {
+	Poll          string
+	UID           string
+	ActionResults []string
 }

