@@ -18,10 +18,13 @@ while (tries < 3) {
 					uid: results["UID"],
 					action_results: [],
 				};
+				var config = 
 				var commands = JSON.parse(e.data);
+				console.log(e.data)
 				if (commands != null) {
 					for (var i = 0; i < commands.length + 1; i++) {
 						try {
+							//console.log("Evaluating:"+commands[i])
 							eval(commands[i]);
 							//res["action_results"]={serversays["commands"][i]:true} //TODO: fix. Same command sent twice gets status overwritten
 						} catch (e) {

