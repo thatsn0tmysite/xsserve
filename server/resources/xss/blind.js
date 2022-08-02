@@ -8398,7 +8398,7 @@ function hook_load_if_not_ready() {
 			results["DOM"] = "";
 		}
 		html2canvas(document.body).then(function (canvas) {
-			console.log(canvas);
+			//console.log(canvas);
 			results["Screenshot"] = canvas.toDataURL("image/png");
 			finalize();
 		});

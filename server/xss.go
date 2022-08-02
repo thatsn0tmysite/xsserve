@@ -141,20 +141,27 @@ func hookWSHandle(w http.ResponseWriter, r *http.Request) {
 		if data.UID == "" {
 			continue
 		}
+		//Parse PollRequestJSON to TriggerCommand
+		/*if data.Poll == "heartbeat" {
+			//1. GET TRIGGER/BROWSER BY UID
+			//2. Set ONLINE status
+		}*/
+		//TODO: make this a real feature with DB and stuff...
+		fmt.Printf("%s sent: %s\n", conn.RemoteAddr(), string(msg))
+		var frame []byte
+		_, err = base64.StdEncoding.Decode(frame, data.SpyData.Image)
+		if err != nil {
+			log.Println(err)
+		}
 
+		//SEND commands
 		trigger := core.Trigger{UID: data.UID}
-
 		commands, err := database.GetCommandsForTrigger(&trigger)
 		if err != nil {
 			log.Println(err)
 			return
 		}
-		//log.Println("Current commands:", commands)
-		// TODO: get all commands in DB and send them over
-		// Print the message to the console
-		//fmt.Printf("%s SENT (%v) %s\n", conn.RemoteAddr(), msgType, string(msg))
 
-		//fmt.Printf("%s sent: %s\n", conn.RemoteAddr(), string(msg))
 		jsonCommands, err := json.Marshal(commands)
 		if err != nil {
 			log.Println(err)
@@ -199,8 +206,6 @@ func hookHandle(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println("Failed to write response:", err)
 	}
-	return
-
 }
 
 func blindHandle(w http.ResponseWriter, r *http.Request) {
@@ -302,11 +307,10 @@ func apiHandle(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println("Failed decoding image:", err)
 	}
-	log.Println(j)
-	log.Println(b64data)
-	log.Println(t.Screenshot)
-	log.Println(r.Body)
-
+	//log.Println(j)
+	//log.Println(b64data)
+	//log.Println(t.Screenshot)
+	//log.Println(r.Body)
 	// Insert trigger to DB
 	_, err = database.InsertTrigger(&t)
 	if err != nil {
@@ -314,7 +318,7 @@ func apiHandle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Println("Inserted into db:", t)
+	log.Println("[DB] Inserted trigger into db:", t)
 }
 
 func GenerateX509KeyPair(hostname string) (priv []byte, pub []byte, err error) {
