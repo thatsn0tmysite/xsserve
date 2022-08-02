@@ -12,7 +12,7 @@
         </div>
 
         <footer>
-            <a href="#cancel" role="button" class="secondary" data-target="spy-modal" onClick="toggleModal(event)"> Disable </a>
+            <a href="#cancel" role="button" class="secondary" data-target="spy-modal" onClick="toggleModal(event)"> Cancel </a>
             <a href="#confirm" role="button" data-target="spy-modal" onClick="toggleModal(event)"> Enable </a>
         </footer>
     </article>
@@ -44,13 +44,14 @@
         <div><b>Status:</b> {{if or (eq .Status "online") (eq .Status "offline")}}.Status{{else}}n/a{{end}}</div>
         <div><b>Date:</b> {{.Date}}</div>
         <div><b>RemoteAddress:</b> {{.RemoteAddr}}</div>
-        <div><b>Host:</b> {{.Host}}{{if .Host}}<a href="https://whois.domaintools.com/{{.Host}}"> <i class="fa fa-external-link"></i></a>{{end}}</div>
+        <div><b>Host:</b> {{.Host}}{{if .Host}}<a href="https://whois.domaintools.com/{{.Host}}"><i class="fa fa-external-link"></i></a>{{end}}</div>
         <div><b>Payload:</b> {{.Payload}}</div>
     </article>
 
     <article>
         <header><i class="fa fa-plane"></i> <b>Browser info</b></header>
 
+        <div><b>Spy mode:</b> DISABLED </div>
         <div><b>Fingerprint:</b> {{.UID}} </div>
         <div><b>UserAgent:</b> {{.UserAgent}}</div>
         <div><b>BrowserDate:</b> {{.BrowserDate}}</div>
@@ -73,8 +74,27 @@
 </div>
 
 <div>
+
     <!--TODO: add history of sent commands from DB and their status-->
-    SENT BEEF COMMANDS AND RELATED INFO WILL BE SHOWN HERE
+    <figure>
+        <table>
+            <thead>
+                <th>
+                    <td>ID</td>
+                    <td>Code</td>
+                    <td>Result</td>
+                </th>
+            </thead>
+            <tbody>
+                {{range $command := .Commands}}
+                    <td>{{$command.ID}}</td>
+                    <td>{{$command.Code}}</td>
+                    <td>{{$command.Result}}</td>
+                {{end}}
+            </tbody>
+        </table>
+    </figure>
+
 </div>
 
 <div>
