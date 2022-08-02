@@ -80,5 +80,6 @@ Here is a list of TODO I have handy, there is much more to do:
 - [ ] Secure code review
 - [ ] Custom error pages
 - [ ] Moar payloads
+- [ ] Docs, docs everywhere!
 - [ ] Obfuscate payloads if requested
 - [ ] Integrated GeoIP for nonsense IP localization with minimap :)
