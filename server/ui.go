@@ -105,7 +105,7 @@ func sendJSHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}
-	log.Print("Adding code (", command, ") to trigger", id)
+	//log.Print("Adding code (", command, ") to trigger", id)
 
 	trigger := core.Trigger{ID: id}
 	_, err = database.InsertCommandForTrigger(&trigger, command)
