@@ -3,12 +3,15 @@
 XSServe is ~~a shameless copy of~~ heavily inspired by the [XSSHunter](https://xsshunter.com) project (by [@IAmMandatory](https://twitter.com/IAmMandatory)), rewritten in Go.
 
 ## ⚠ Disclaimer
-The project is in a VERY bare bone state right now, so if you want a prime experience, use other tools.
+The project is in a SEMI usable state right now, if you want a prime experience I still suggest the use of other tools.
 
 > NOTE: only basic authentication is supported for the UI for now.
 
-## 📷 Mandatory screenshot
+## 📷 Mandatory screenshot(s)
 ![Mandatory screenshot](.images/mandatory.png)
+
+![Mandatory screenshot 2](.images/mandatory2.png)
+
 
 ## 🏁 Goals
 The initial goal is to allow users to use the same service, but in a self-contained way for lazy penetration testers, like myself.
@@ -33,6 +36,7 @@ Currently I'd love some help with:
 - UI/UX: in case it wasn't obvious by the look of it, the UI is pretty ugly. I wouldn't mind a skilled UI designer to do a nice looking interface to ease the usage and look... well... good.
 - Developers: I am currently working on this project as I learn Go, in the little free time I have, I am by no means a developer so any advice is appreciated, without overly complicating the project.
 - Logo: cause every cool project has a logo.
+- Getting a life... Anyone?
 
 If you want to get in touch hit me up on [twitter](https://twitter.com/thatsn0tmysite) or [matrix](https://matrix.to/#/@thatsn0tmysite:matrix.org)!
 
@@ -46,12 +50,13 @@ Here is a list of TODO I have handy, there is much more to do:
 - [x] Logo
 - [x] Dynamic blind.js file
 - [x] blind.js other fixes / simplify code 
-- [ ] Dynamic hook.js file
+- [x] Dynamic hook.js file
+- [ ] Live browser "spy mode" (currently in the works, might change to webrtc later idk)
 - [ ] Plugin system for hook.js (capabilityEnum, webcam/mic, live, BitB, keylogger, eventHook)
 - [ ] Allow custom files served by /c 
 - [x] Self-signed HTTPS certificate on startup
 - [ ] Minor mimetype issues
-- [ ] Better report details page
+- [x] Better report details page
 - [ ] Export reports to md file
 - [ ] Secure code review
 - [ ] Custom error pages
