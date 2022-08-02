@@ -80,6 +80,20 @@ func initialize() (err error) {
 		FOREIGN KEY(TriggerId) REFERENCES Triggers(id)
 	)`)
 
+	/*
+		db.Query(`CREATE TABLE IF NOT EXISTS "Browsers" (
+			"id"	INTEGER NOT NULL UNIQUE,
+			"TriggerId"	INTEGER NOT NULL,
+			"SpyImage"	INTEGER,
+			"SpyFocusedElement" TEXT,
+			"SpyKeylog" TEXT,
+			"SpyMouseX" INTEGER,
+			"SpyMouseY" INTEGER,
+			PRIMARY KEY("id"),
+			FOREIGN KEY(TriggerId) REFERENCES Triggers(id)
+		)`)
+	*/
+
 	/*Check if we have and empty table, if so add the default payloads*/
 	var count int
 	rows := db.QueryRow("SELECT COUNT(*) from Payloads")
@@ -213,7 +227,7 @@ func GetTrigger(trigger *core.Trigger) (err error) {
 	return err
 }
 
-func GetCommandsForTrigger(trigger *core.Trigger) ([]string, error) {
+func GetCommandsForTrigger(trigger *core.Trigger) ([]core.TriggerCommand, error) {
 	var triggerID int
 	err := db.QueryRow(`SELECT ID FROM Triggers WHERE UID=? LIMIT 1`, trigger.UID).Scan(&triggerID)
 	if err != nil {
@@ -227,14 +241,15 @@ func GetCommandsForTrigger(trigger *core.Trigger) ([]string, error) {
 	}
 	defer rows.Close()
 
-	var commands []string
+	var commands []core.TriggerCommand
+
 	for rows.Next() {
 		var c core.TriggerCommand
 		err = rows.Scan(&c.ID, &c.TriggerId, &c.QueuePosition, &c.IssuedAt, &c.RepliedAt, &c.Code, &c.Result)
 		if err != nil {
 			break
 		}
-		commands = append(commands, c.Code)
+		commands = append(commands, c)
 	}
 
 	//log.Println(commands)
