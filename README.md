@@ -19,23 +19,23 @@ The initial goal is to allow users to use the same service, but in a self-contai
 The final goal is still unclear as the project might evolve as different needs arise. 
 
 The basic **current features** include:
-    - Blind XSS (screenshot, cookies, DOM) 
-    - Information gathering (browser fingerprinting, local time and date, UA)
-    - Automatic session hijacking using Selenium (click big blue button, browse as victim!)
-    - Websockets for live js injections (like BEeF, but simpler)
+- Blind XSS (screenshot, cookies, DOM) 
+- Information gathering (browser fingerprinting, local time and date, UA)
+- Automatic session hijacking using Selenium (click big blue button, browse as victim!)
+- Websockets for live js injections (like BEeF, but simpler)
 
-Planned features:
-    - Spy mode: see what the user sees, types and points at in real time
-    - BEeF like plugins and victim browser management
-    - Report generation
-    - Cool dashboard to keep track of them pwns
-    - Payload obfuscation
-    - Serving of custom js files via API
+**Planned features**:
+- Spy mode: see what the user sees, types and points at in real time
+- BEeF like plugins and victim browser management
+- Report generation
+- Cool dashboard to keep track of them pwns
+- Payload obfuscation
+- Serving of custom js files via API
 
-Possible "maybe" features:
-    - Auto-submit to bug bounty platform(s)
-    - Enable multiple users (this might need some major refactoring)
-    - idk?
+Possible "**maybe**" features:
+- Auto-submit to bug bounty platform(s)
+- Enable multiple users (this might need some major refactoring)
+- idk?
 
 ## 🔧 Build
 This project requires at least `golang >= 1.16`, as it makes use of the `embed` package.
