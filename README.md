@@ -1,3 +1,5 @@
+![XSServe logo](.images/github_logo.png)
+
 # XSServe
 
 XSServe is ~~a shameless copy of~~ heavily inspired by the [XSSHunter](https://xsshunter.com) project (by [@IAmMandatory](https://twitter.com/IAmMandatory)), rewritten in Go.
